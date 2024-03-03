@@ -1,0 +1,2 @@
+add_executable(car_park_app car_park_app.cpp)
+target_link_libraries(car_park_app PRIVATE car_park)
