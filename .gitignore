@@ -1,3 +1,13 @@
+### Jetbrains
+
+.idea
+
+# CMake
+cmake-build-*/
+
+# IntelliJ
+out/
+
 ### C++ template
 # Prerequisites
 *.d
