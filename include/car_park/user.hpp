@@ -17,6 +17,10 @@ namespace car_park {
         std::string get_login();
 
         std::string get_type();
+
+        static bool check_access(User& user){
+            return user.get_type() == "superuser" || user.get_type() == "admin";
+        }
     };
     
     class UsersDAO {
