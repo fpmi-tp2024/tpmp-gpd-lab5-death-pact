@@ -2,7 +2,9 @@
 #ifndef CAR_PARK_PROJECT_CAR_H
 #define CAR_PARK_PROJECT_CAR_H
 #include <string>
+#include "car_park/user.hpp"
 
+namespace car_park {
 class Car {
 private:
     std::string number;
@@ -33,6 +35,14 @@ public:
         return total_weight;
     }
 };
+
+class CarsDAO {
+public:
+    static void insert(Car& car);
+    static Car* find_by_number(User& user, std::string car_number);
+    static Car* find_with_max_total_mileage();
+};
+}
 
 
 #endif //CAR_PARK_PROJECT_CAR_H
