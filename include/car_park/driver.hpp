@@ -59,13 +59,15 @@ namespace car_park {
             return total_money;
         }
 
+        static bool check_ownership(User& user, std::string car_number);
+
         int count_order_per_period(long long start_date, long long end_date);
     };
     class DriversDAO {
     public:
         static Driver* find_by_user(User& user);
         static Driver* find_with_min_orders();
-        static void find_all(User& user, std::vector<Driver>& drivers);
+        static void find_all(std::vector<Driver>& drivers);
         static bool insert(Driver& driver);
     };
 }

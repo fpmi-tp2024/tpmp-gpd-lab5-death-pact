@@ -65,7 +65,7 @@ namespace car_park {
         std::vector<MoneyPerPeriod*> money_notes;
         if (User::check_access(user)) {
             std::vector<Driver> drivers;
-            DriversDAO::find_all(user, drivers);
+            DriversDAO::find_all(drivers);
             for (auto i: drivers) {
                 money_notes.push_back(count(user, i, datetime_start, datetime_end));
             }

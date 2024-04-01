@@ -21,7 +21,9 @@ namespace car_park {
         ss >> cost;
     }
 
-    bool OrdersDAO::check_weight(Order* order, Car* car){                                      // To fix: encapsulation violations
+    bool OrdersDAO::check_weight(Order* order, Car* car){
+        if (order == nullptr || car == nullptr)
+            return false;
         return order->getCargoWeight() <= car->getCapacity();
     }
 
@@ -54,7 +56,7 @@ namespace car_park {
         sqlite3_close(db);
     }
     bool OrdersDAO::insert(Order& order) {
-        User user;
+        User user("tempuser,superuser");
         if (OrdersDAO::check_weight(&order, CarsDAO::find_by_number(user, order.getCarNumber()))) {
             sqlite3 *db;
             int rc = sqlite3_open("../../autopark.db", &db);
@@ -81,7 +83,7 @@ namespace car_park {
         return false;
     }
     bool OrdersDAO::update(Order& order){
-        User user;
+        User user("tempuser,superuser");
         if (OrdersDAO::check_weight(&order, CarsDAO::find_by_number(user, order.getCarNumber()))) {
             sqlite3 *db;
 

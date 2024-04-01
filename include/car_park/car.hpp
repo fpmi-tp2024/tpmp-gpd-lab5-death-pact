@@ -3,6 +3,7 @@
 #define CAR_PARK_PROJECT_CAR_H
 #include <string>
 #include "car_park/user.hpp"
+#include "car_park/driver.hpp"
 
 namespace car_park {
 class Car {

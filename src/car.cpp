@@ -70,7 +70,7 @@ namespace car_park {
     }
 
     Car* CarsDAO::find_by_number(User& user, std::string car_number){
-        if (User::check_access(user)) {
+        if (Driver::check_ownership(user,car_number)) {
             sqlite3 *db;
             int rc = sqlite3_open("../../autopark.db", &db);
             if (rc != SQLITE_OK)
@@ -99,7 +99,6 @@ namespace car_park {
     }
 
     Car* CarsDAO::find_with_max_total_mileage(User& user){
-        if (User::check_access(user)) {
             sqlite3 *db;
             int rc = sqlite3_open("../../autopark.db", &db);
             if (rc != SQLITE_OK)
@@ -122,12 +121,14 @@ namespace car_park {
                     double capacity = sqlite3_column_double(stmt, 3);
                     sqlite3_finalize(stmt);
                     sqlite3_close(db);
-                    return new Car(number + "," + brand + "," + std::to_string(initial_mileage) + "," +
-                                   std::to_string(capacity));
+                    if (Driver::check_ownership(user,number)) {
+                        return new Car(number + "," + brand + "," + std::to_string(initial_mileage) + "," +
+                                       std::to_string(capacity));
+                    }
+                    return nullptr;
                 }
             }
             sqlite3_close(db);
-        }
-        return nullptr;
+            return nullptr;
     }
 }
