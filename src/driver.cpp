@@ -24,84 +24,114 @@ namespace car_park {
     }
 
 
-    static int f_select(void *sql_data, int argc, char **argv, char **azColName){
-        if (argc == 0) return 0;
-
-        std::string driver_data = std::string(argv[0] ? argv[0] : "NULL");
-        for (int i = 1; i < argc; i++) {
-            driver_data += "," + std::string(argv[i] ? argv[i] : "NULL");
-        }
-        sql_data = (void*)driver_data.c_str();
-        return 0;
-    }
-
-    static int f_select_all(void *driverListPtr, int argc, char **argv, char **azColName) {
-        if (argc == 0) return 0;
-
-        auto drivers = (std::vector<Driver>*)driverListPtr;
-        std::string driver_data = std::string(argv[0] ? argv[0] : "NULL");
-        for (int i = 1; i < argc; i++) {
-            driver_data += "," + std::string(argv[i] ? argv[i] : "NULL");
-        }
-        drivers->emplace_back(Driver(driver_data));
-        return 0;
-    }
 
     Driver* DriversDAO::find_by_user(User& user){
         sqlite3 *db;
-        char *zErrMsg = nullptr;
-        char *sql_data;
-        const char *sql;
-        int rc;
-        rc = sqlite3_open("../ext/autopark.db", &db);
-        std::string sql_str = "SELECT * FROM drivers WHERE user_login = '" + user.get_login() + "'";
-        sql = sql_str.c_str();
-        rc = sqlite3_exec(db, sql, f_select, (void*)sql_data, &zErrMsg);
+        int rc = sqlite3_open("../../autopark.db", &db);
+        if (rc != SQLITE_OK)
+            return nullptr;
+        std::string sql = "SELECT * FROM drivers WHERE user_login = ?";
+        sqlite3_stmt* stmt;
+
+        if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_text(stmt, 1, user.get_login().c_str(), -1, SQLITE_STATIC);
+
+            if (sqlite3_step(stmt) == SQLITE_ROW) {
+                int id = sqlite3_column_int(stmt, 0);
+                std::string user_login = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+                std::string name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+                std::string category = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+                int career_start = sqlite3_column_int(stmt, 4);
+                int birth_year = sqlite3_column_int(stmt, 5);
+
+                sqlite3_finalize(stmt);
+                sqlite3_close(db);
+                return new Driver(std::to_string(id) + "," + user_login + "," + name + "," + category + "," +
+                                  std::to_string(career_start) + "," + std::to_string(birth_year));
+            }
+        }
         sqlite3_close(db);
-        return new Driver(std::string(sql_data));
+        return nullptr;
     }
-    Driver* DriversDAO::find_with_min_orders(User& user){
+    Driver* DriversDAO::find_with_min_orders(){
         sqlite3 *db;
-        char *zErrMsg = nullptr;
-        char *sql_data;
-        const char *sql;
-        int rc;
-        rc = sqlite3_open("../ext/autopark.db", &db);
-        std::string sql_str = "SELECT * FROM drivers " \
-                          "INNER JOIN orders ON drivers.id = orders.driver_id " \
-                          "GROUP BY id " \
-                          "ORDER BY COUNT(id) ASC " \
-                          "LIMIT 1; ";
-        sql = sql_str.c_str();
-        rc = sqlite3_exec(db, sql, f_select, (void*)sql_data, &zErrMsg);
+        int rc = sqlite3_open("../../autopark.db", &db);
+        if (rc != SQLITE_OK)
+            return nullptr;
+        std::string sql = "SELECT drivers.*, COUNT(orders.id) AS total_orders "
+                          "FROM drivers "
+                          "LEFT JOIN orders ON drivers.id = orders.driver_id "
+                          "GROUP BY drivers.id "
+                          "ORDER BY total_orders ASC "
+                          "LIMIT 1";
+
+        sqlite3_stmt* stmt;
+
+        if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+            if (sqlite3_step(stmt) == SQLITE_ROW) {
+                int id = sqlite3_column_int(stmt, 0);
+                std::string user_login = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+                std::string name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+                std::string category = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+                int career_start = sqlite3_column_int(stmt, 4);
+                int birth_year = sqlite3_column_int(stmt, 5);
+
+
+
+                sqlite3_finalize(stmt);
+                sqlite3_close(db);
+                return new Driver(std::to_string(id) + "," + user_login + "," + name + "," + category + "," + std::to_string(career_start) + "," + std::to_string(birth_year));
+            }
+        }
         sqlite3_close(db);
-        return new Driver(std::string(sql_data));
+        return nullptr;
     }
     void DriversDAO::find_all(User& user, std::vector<Driver>& drivers){
         sqlite3 *db;
-        char *zErrMsg = nullptr;
-        std::vector<Driver>* driverListPtr = &drivers;
-        const char *sql;
-        int rc;
-        rc = sqlite3_open("../ext/autopark.db", &db);
-        std::string sql_str = "SELECT * FROM drivers;";
-        sql = sql_str.c_str();
-        rc = sqlite3_exec(db, sql, f_select_all, (void*)driverListPtr, &zErrMsg);
+        int rc = sqlite3_open("../../autopark.db", &db);
+        if (rc != SQLITE_OK)
+            return;
+        std::string sql = "SELECT * FROM drivers";
+
+        sqlite3_stmt* stmt;
+
+        if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+            while (sqlite3_step(stmt) == SQLITE_ROW) {
+                int id = sqlite3_column_int(stmt, 0);
+                std::string user_login = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+                std::string name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+                std::string category = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+                int career_start = sqlite3_column_int(stmt, 4);
+                int birth_year = sqlite3_column_int(stmt, 5);
+
+                drivers.emplace_back(Driver(std::to_string(id) + "," + user_login + "," + name + "," + category + "," + std::to_string(career_start) + "," + std::to_string(birth_year)));
+            }
+
+            sqlite3_finalize(stmt);
+        }
         sqlite3_close(db);
     }
-    void DriversDAO::insert(Driver& driver){
+    bool DriversDAO::insert(Driver& driver){
         sqlite3 *db;
-        char *zErrMsg = nullptr;
-        char *sql_data;
-        const char *sql;
-        int rc;
-        rc = sqlite3_open("../ext/autopark.db", &db);
-        std::string sql_str = "INSERT INTO drivers (id,user_login,name,category,career_start,birth_year) "  \
-                            "VALUES (" + std::to_string(driver.getId()) + ", '" + driver.getUserLogin() + "', '" + driver.getName() + "', '"
-                              + driver.getCategory() + "', " + std::to_string(driver.getCareerStart()) + ", " + std::to_string(driver.getBirthYear()) + "); ";
-        sql = sql_str.c_str();
-        rc = sqlite3_exec(db, sql, nullptr, (void*)sql_data, &zErrMsg);
+        int rc = sqlite3_open("../../autopark.db", &db);
+        if (rc != SQLITE_OK)
+            return false;
+        std::string sql = "INSERT INTO drivers (user_login, name, category, career_start, birth_year) VALUES (?, ?, ?, ?, ?)";
+        sqlite3_stmt* stmt;
+        if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_text(stmt, 1, driver.getUserLogin().c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_text(stmt, 2, driver.getName().c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_text(stmt, 3, driver.getCategory().c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_int64(stmt, 4, driver.getCareerStart());
+            sqlite3_bind_int64(stmt, 5, driver.getBirthYear());
+            sqlite3_step(stmt);
+            sqlite3_finalize(stmt);
+        } else {
+            sqlite3_close(db);
+            return false;
+        }
         sqlite3_close(db);
+        return true;
     }
 
 }
