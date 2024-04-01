@@ -47,60 +47,64 @@ namespace car_park {
     }
 
     Car* CarsDAO::find_by_number(User& user, std::string car_number){
-        sqlite3 *db;
-        int rc = sqlite3_open("../../autopark.db", &db);
-        if (rc != SQLITE_OK)
-            return nullptr;
-        std::string sql = "SELECT * FROM cars WHERE number = ?";
-        sqlite3_stmt *stmt;
+        if (User::check_access(user)) {
+            sqlite3 *db;
+            int rc = sqlite3_open("../../autopark.db", &db);
+            if (rc != SQLITE_OK)
+                return nullptr;
+            std::string sql = "SELECT * FROM cars WHERE number = ?";
+            sqlite3_stmt *stmt;
 
-        if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
-            sqlite3_bind_text(stmt, 1, car_number.c_str(), -1, SQLITE_STATIC);
+            if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+                sqlite3_bind_text(stmt, 1, car_number.c_str(), -1, SQLITE_STATIC);
 
-            if (sqlite3_step(stmt) == SQLITE_ROW) {
-                std::string number = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 0));
-                std::string brand = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 1));
-                double initial_mileage = sqlite3_column_double(stmt, 2);
-                double capacity = sqlite3_column_double(stmt, 3);
+                if (sqlite3_step(stmt) == SQLITE_ROW) {
+                    std::string number = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 0));
+                    std::string brand = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 1));
+                    double initial_mileage = sqlite3_column_double(stmt, 2);
+                    double capacity = sqlite3_column_double(stmt, 3);
 
-                sqlite3_finalize(stmt);
-                sqlite3_close(db);
-                return new Car(number + "," + brand + "," + std::to_string(initial_mileage) + "," +
-                               std::to_string(capacity));
+                    sqlite3_finalize(stmt);
+                    sqlite3_close(db);
+                    return new Car(number + "," + brand + "," + std::to_string(initial_mileage) + "," +
+                                   std::to_string(capacity));
+                }
             }
+            sqlite3_close(db);
         }
-        sqlite3_close(db);
         return nullptr;
     }
 
-    Car* CarsDAO::find_with_max_total_mileage(){
-        sqlite3 *db;
-        int rc = sqlite3_open("../../autopark.db", &db);
-        if (rc != SQLITE_OK)
-            return nullptr;
-        std::string sql = "SELECT cars.*, "
-                          " (cars.initial_mileage + IFNULL(SUM(orders.length), 0)) AS total_mileage "
-                          "FROM cars "
-                          "LEFT JOIN orders ON cars.number = orders.car_number "
-                          "GROUP BY cars.number "
-                          "ORDER BY total_mileage DESC "
-                          "LIMIT 1";
+    Car* CarsDAO::find_with_max_total_mileage(User& user){
+        if (User::check_access(user)) {
+            sqlite3 *db;
+            int rc = sqlite3_open("../../autopark.db", &db);
+            if (rc != SQLITE_OK)
+                return nullptr;
+            std::string sql = "SELECT cars.*, "
+                              " (cars.initial_mileage + IFNULL(SUM(orders.length), 0)) AS total_mileage "
+                              "FROM cars "
+                              "LEFT JOIN orders ON cars.number = orders.car_number "
+                              "GROUP BY cars.number "
+                              "ORDER BY total_mileage DESC "
+                              "LIMIT 1";
 
-        sqlite3_stmt *stmt;
+            sqlite3_stmt *stmt;
 
-        if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
-            if (sqlite3_step(stmt) == SQLITE_ROW) {
-                std::string number = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 0));
-                std::string brand = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 1));
-                double initial_mileage = sqlite3_column_double(stmt, 2);
-                double capacity = sqlite3_column_double(stmt, 3);
-                sqlite3_finalize(stmt);
-                sqlite3_close(db);
-                return new Car(number + "," + brand + "," + std::to_string(initial_mileage) + "," +
-                               std::to_string(capacity));
+            if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+                if (sqlite3_step(stmt) == SQLITE_ROW) {
+                    std::string number = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 0));
+                    std::string brand = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 1));
+                    double initial_mileage = sqlite3_column_double(stmt, 2);
+                    double capacity = sqlite3_column_double(stmt, 3);
+                    sqlite3_finalize(stmt);
+                    sqlite3_close(db);
+                    return new Car(number + "," + brand + "," + std::to_string(initial_mileage) + "," +
+                                   std::to_string(capacity));
+                }
             }
+            sqlite3_close(db);
         }
-        sqlite3_close(db);
         return nullptr;
     }
 }

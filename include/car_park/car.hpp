@@ -40,7 +40,7 @@ class CarsDAO {
 public:
     static bool insert(Car& car);
     static Car* find_by_number(User& user, std::string car_number);
-    static Car* find_with_max_total_mileage();
+    static Car* find_with_max_total_mileage(User& user);
 };
 }
 
