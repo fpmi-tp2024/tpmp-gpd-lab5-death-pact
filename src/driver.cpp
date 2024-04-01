@@ -20,7 +20,29 @@ namespace car_park {
     }
 
     int Driver::count_order_per_period(long long start_date, long long end_date) {
+        sqlite3 *db;
+        int rc = sqlite3_open("../../autopark.db", &db);
+        if (rc != SQLITE_OK)
+            return 0;
+        std::string sql = "SELECT COUNT(*) FROM orders WHERE driver_id = ? AND datetime >= ? AND datetime <= ?";
+        sqlite3_stmt* stmt;
+        int count = 0;
 
+        if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_int64(stmt, 1, id);
+            sqlite3_bind_int64(stmt, 2, start_date);
+            sqlite3_bind_int64(stmt, 3, end_date);
+
+            if (sqlite3_step(stmt) == SQLITE_ROW) {
+                count = sqlite3_column_int(stmt, 0);
+            }
+
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return count;
+        }
+        sqlite3_close(db);
+        return 0;
     }
 
 

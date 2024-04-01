@@ -17,6 +17,7 @@ namespace car_park {
         int total_orders;
         long double total_weight;
         long double total_money;
+
     public:
         explicit Driver(std::string sql_data);
 

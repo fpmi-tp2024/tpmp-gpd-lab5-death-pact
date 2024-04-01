@@ -13,6 +13,7 @@ private:
     double capacity;
     double total_mileage;
     double total_weight;
+
 public:
     Car();
     explicit Car(std::string sql_data);
