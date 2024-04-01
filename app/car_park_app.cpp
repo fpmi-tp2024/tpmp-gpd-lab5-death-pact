@@ -1,7 +1,8 @@
 #include "car_park/car_park.hpp"
 #include <iostream>
 
+using namespace car_park;
 int main(){
-  int result = car_park::add_one(1);
-  std::cout << "1 + 1 = " << result << std::endl;
+
+    return 0;
 }
