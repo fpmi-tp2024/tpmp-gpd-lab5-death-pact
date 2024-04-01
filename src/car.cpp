@@ -23,6 +23,29 @@ namespace car_park {
 
         total_mileage = 0;
         total_weight = 0;
+        count_totals();
+    }
+
+    void Car::count_totals() {
+        sqlite3 *db;
+        int rc = sqlite3_open("../../autopark.db", &db);
+        if (rc != SQLITE_OK)
+            return;
+        std::string sql = "SELECT SUM(length) AS total_mileage, SUM(cargo_weight) AS total_cargo_weight FROM orders WHERE car_number = ?;";
+        sqlite3_stmt *stmt;
+
+        if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_text(stmt, 1, number.c_str(), -1, SQLITE_STATIC);
+
+            if (sqlite3_step(stmt) == SQLITE_ROW) {
+                total_mileage = sqlite3_column_double(stmt, 0) + initial_mileage;
+                total_weight = sqlite3_column_double(stmt, 1);
+
+                sqlite3_finalize(stmt);
+                sqlite3_close(db);
+            }
+        }
+        sqlite3_close(db);
     }
 
     bool CarsDAO::insert(Car& car){

@@ -18,6 +18,8 @@ namespace car_park {
         long double total_weight;
         long double total_money;
 
+        void count_totals();
+
     public:
         explicit Driver(std::string sql_data);
 
@@ -45,7 +47,7 @@ namespace car_park {
             return birth_year;
         }
 
-        int getTotal() {
+        int getTotalOrders() {
             return total_orders;
         }
 

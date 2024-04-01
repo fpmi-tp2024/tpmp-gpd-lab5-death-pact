@@ -14,6 +14,8 @@ private:
     double total_mileage;
     double total_weight;
 
+    void count_totals();
+
 public:
     Car();
     explicit Car(std::string sql_data);

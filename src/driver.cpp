@@ -17,6 +17,28 @@ namespace car_park {
         total_weight = 0;
         total_money = 0;
         total_orders = 0;
+        count_totals();
+    }
+
+    void Driver::count_totals() {
+        sqlite3 *db;
+        int rc = sqlite3_open("../../autopark.db", &db);
+        if (rc != SQLITE_OK)
+            return;
+        std::string sql = "SELECT COUNT(*) AS total_orders, SUM(cost) AS total_money, SUM(cargo_weight) AS total_cargo_weight FROM orders WHERE driver_id = ?;";
+        sqlite3_stmt *stmt;
+
+        if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_int64(stmt, 1, id);
+            if (sqlite3_step(stmt) == SQLITE_ROW) {
+                total_orders = sqlite3_column_int(stmt, 0);
+                total_money = sqlite3_column_double(stmt, 1);
+                total_weight = sqlite3_column_double(stmt, 2);
+                sqlite3_finalize(stmt);
+                sqlite3_close(db);
+            }
+        }
+        sqlite3_close(db);
     }
 
     int Driver::count_order_per_period(long long start_date, long long end_date) {
