@@ -1,28 +1,22 @@
-#include <cstring>
 #include "car_park/driver.hpp"
 #include "sql/sqlite3.h"
-#include <cstdlib>
+#include <sstream>
 
 namespace car_park {
-    Driver::Driver() {
-
-    }
-
     Driver::Driver(std::string sql_data) {
-        const char *delim = ",";
-        char *endptr;
-        char *value = strtok(sql_data.data(), delim);
-        id = strtoll(value, &endptr, 10);
-        value = strtok(nullptr, delim);
-        user_login = std::string(value);
-        value = strtok(nullptr, delim);
-        name = std::string(value);
-        value = strtok(nullptr, delim);
-        category = std::string(value);
-        value = strtok(nullptr, delim);
-        career_start = strtoll(value, &endptr, 10);
-        value = strtok(nullptr, delim);
-        birth_year = strtoll(value, &endptr, 10);
+        std::stringstream ss(sql_data);
+        ss >> id;
+        ss.ignore();
+        std::getline(ss, user_login, ',');
+        std::getline(ss, name, ',');
+        std::getline(ss, category, ',');
+        ss >> career_start;
+        ss.ignore();
+        ss >> birth_year;
+
+        total_weight = 0;
+        total_money = 0;
+        total_orders = 0;
     }
 
     int Driver::count_order_per_period(long long start_date, long long end_date) {

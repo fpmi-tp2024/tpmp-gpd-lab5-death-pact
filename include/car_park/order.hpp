@@ -9,6 +9,7 @@
 namespace car_park {
     class Order {
     private:
+        Order();
         long long id;
         long long datetime;
         long long driver_id;
@@ -17,7 +18,7 @@ namespace car_park {
         double cargo_weight;
         double cost;
     public:
-        Order();
+
 
         explicit Order(std::string sql_data);
 

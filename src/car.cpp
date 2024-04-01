@@ -1,14 +1,28 @@
 #include "car_park/car.hpp"
 #include "sql/sqlite3.h"
 #include <string>
+#include <sstream>
 
 namespace car_park {
     Car::Car() {
-
+        number = "";
+        brand = "Unknown";
+        initial_mileage = 0;
+        capacity = 0;
+        total_mileage = 0;
+        total_weight = 0;
     }
 
     Car::Car(std::string sql_data) {
+        std::stringstream ss(sql_data);
+        std::getline(ss, number, ',');
+        std::getline(ss, brand, ',');
+        ss >> initial_mileage;
+        ss.ignore();
+        ss >> capacity;
 
+        total_mileage = 0;
+        total_weight = 0;
     }
 
 

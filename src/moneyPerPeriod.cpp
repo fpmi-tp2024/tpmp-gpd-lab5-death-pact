@@ -1,12 +1,17 @@
 #include "car_park/moneyPerPeriod.hpp"
 #include "sql/sqlite3.h"
+#include <sstream>
 namespace car_park {
-    MoneyPerPeriod::MoneyPerPeriod() {
-
-    }
-
-    MoneyPerPeriod::MoneyPerPeriod(std::string sql_data) {
-
+    long long MoneyPerPeriod::next_id = 0;
+    MoneyPerPeriod::MoneyPerPeriod(std::string sql_data) : id(next_id++) {
+        std::stringstream ss(sql_data);
+        ss >> datetime_from;
+        ss.ignore();
+        ss >> datetime_to;
+        ss.ignore();
+        ss >> driver_id;
+        ss.ignore();
+        ss >> total_money;
     }
 
     static int f_select(void *sql_data, int argc, char **argv, char **azColName){

@@ -15,7 +15,7 @@ private:
     double total_weight;
 public:
     Car();
-    Car(std::string sql_data);
+    explicit Car(std::string sql_data);
     double getCapacity(){
         return capacity;
     }

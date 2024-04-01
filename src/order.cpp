@@ -1,14 +1,24 @@
 #include <string>
 #include "car_park/order.hpp"
 #include "sql/sqlite3.h"
+#include <sstream>
 
 namespace car_park {
-    Order::Order() {
-
-    }
 
     Order::Order(std::string sql_data) {
-
+        std::stringstream ss(sql_data);
+        ss >> id;
+        ss.ignore();
+        ss >> datetime;
+        ss.ignore();
+        ss >> driver_id;
+        ss.ignore();
+        std::getline(ss, car_number, ',');
+        ss >> length;
+        ss.ignore();
+        ss >> cargo_weight;
+        ss.ignore();
+        ss >> cost;
     }
 
 

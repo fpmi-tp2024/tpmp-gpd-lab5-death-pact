@@ -12,7 +12,7 @@ namespace car_park {
     public:
         User();
 
-        User(std::string sql_data);
+        explicit User(std::string sql_data);
 
         std::string get_login();
 

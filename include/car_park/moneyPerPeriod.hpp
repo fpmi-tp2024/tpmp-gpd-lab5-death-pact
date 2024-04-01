@@ -11,15 +11,17 @@
 namespace car_park {
     class MoneyPerPeriod {
     private:
+        MoneyPerPeriod();
+        static long long next_id;
         long long id;
         long long datetime_from;
         long long datetime_to;
         long long driver_id;
         long double total_money;
     public:
-        MoneyPerPeriod();
 
-        MoneyPerPeriod(std::string sql_data);
+
+        explicit MoneyPerPeriod(std::string sql_data);
 
         long long getId() {
             return id;

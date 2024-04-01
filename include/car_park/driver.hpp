@@ -7,6 +7,7 @@
 namespace car_park {
     class Driver {
     private:
+        Driver();
         long long id;
         std::string user_login;
         std::string name;
@@ -17,9 +18,7 @@ namespace car_park {
         long double total_weight;
         long double total_money;
     public:
-        Driver();
-
-        Driver(std::string sql_data);
+        explicit Driver(std::string sql_data);
 
         long long getId() {
             return id;

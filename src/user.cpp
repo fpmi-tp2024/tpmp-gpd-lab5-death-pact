@@ -1,7 +1,5 @@
 #include "car_park/user.hpp"
-
 #include "sql/sqlite3.h"
-#include <cstring>
 #include <sstream>
 
 
@@ -10,15 +8,13 @@
 namespace car_park {
     User::User() {
         login = "";
-        type = "superuser";
+        type = "client";
     }
 
     User::User(std::string sql_data) {
-        const char *delim = ",";
-        char *value = strtok(sql_data.data(), delim);
-        login = std::string(value);
-        value = strtok(nullptr, delim);
-        type = std::string(value);
+        std::stringstream ss(sql_data);
+        std::getline(ss, login, ',');
+        std::getline(ss, type, ',');
     }
 
     std::string User::get_login() {
