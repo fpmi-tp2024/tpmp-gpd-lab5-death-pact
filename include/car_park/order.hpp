@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "car_park/driver.hpp"
+#include "car_park/user.hpp"
 #include "car_park/car.hpp"
 
 namespace car_park {
@@ -56,7 +57,7 @@ namespace car_park {
         static bool check_weight(Order* order, Car* car);
         static void find_all_by_driver(Driver& driver, std::vector<Order>& orders_of_driver);
         static bool insert(Order& order);
-        static void update(Order& order);
+        static bool update(Order& order);
 
     };
 }

@@ -21,72 +21,92 @@ namespace car_park {
         ss >> cost;
     }
 
-
-    static int f_select(void *ordersListPtr, int argc, char **argv, char **azColName){
-        if (argc == 0) return 0;
-
-        auto orders = (std::vector<Order>*)ordersListPtr;
-        std::string order_data = std::string(argv[0] ? argv[0] : "NULL");
-        for (int i = 1; i < argc; i++) {
-            order_data += "," + std::string(argv[i] ? argv[i] : "NULL");
-        }
-        orders->emplace_back(Order(order_data));
-        return 0;
-    }
-
     bool OrdersDAO::check_weight(Order* order, Car* car){                                      // To fix: encapsulation violations
         return order->getCargoWeight() <= car->getCapacity();
     }
 
     void OrdersDAO::find_all_by_driver(Driver& driver, std::vector<Order>& orders_of_driver){
         sqlite3 *db;
-        char *zErrMsg = nullptr;
-        std::vector<Order>* ordersListPtr = &orders_of_driver;
-        const char *sql;
-        int rc;
-        rc = sqlite3_open("../ext/autopark.db", &db);
-        std::string sql_str = "SELECT * FROM orders WHERE driver_id = " + std::to_string(driver.getId()) + ";";
-        sql = sql_str.c_str();
-        rc = sqlite3_exec(db, sql, f_select, (void*)ordersListPtr, &zErrMsg);
+        int rc = sqlite3_open("../../autopark.db", &db);
+        if (rc != SQLITE_OK)
+            return;
+        std::string sql = "SELECT * FROM orders WHERE driver_id = ?";
+        sqlite3_stmt* stmt;
+
+        if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_int64(stmt, 1, driver.getId());
+
+            while (sqlite3_step(stmt) == SQLITE_ROW) {
+                int id = sqlite3_column_int(stmt, 0);
+                int datetime = sqlite3_column_int(stmt, 1);
+                int driver_id = sqlite3_column_int(stmt, 2);
+                std::string car_number = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+                double length = sqlite3_column_double(stmt, 4);
+                double cargo_weight = sqlite3_column_double(stmt, 5);
+                double cost = sqlite3_column_double(stmt, 6);
+
+                orders_of_driver.emplace_back(Order(std::to_string(id) + "," + std::to_string(datetime) + "," + std::to_string(driver_id) + ","  +
+                                                    car_number + "," + std::to_string(length) + "," + std::to_string(cargo_weight) + "," + std::to_string(cost)));
+            }
+
+            sqlite3_finalize(stmt);
+        }
         sqlite3_close(db);
     }
-    bool OrdersDAO::insert(Order& order){
-        if (OrdersDAO::check_weight(&order, CarsDAO::find_by_number(User(), order.getCarNumber())))
-        {
+    bool OrdersDAO::insert(Order& order) {
+        User user;
+        if (OrdersDAO::check_weight(&order, CarsDAO::find_by_number(user, order.getCarNumber()))) {
             sqlite3 *db;
-            char *zErrMsg = nullptr;
-            char *sql_data;
-            const char *sql;
-            int rc;
-            rc = sqlite3_open("../ext/autopark.db", &db);
-            std::string sql_str = "INSERT INTO orders (id,datetime,driver_id,car_number,length,cargo_weight,cost) "  \
-                            "VALUES (" + std::to_string(order.getId()) + ", " + std::to_string(order.getDatetime()) + ", " + std::to_string(order.getDriverId()) + ", '"
-                                  + order.getCarNumber() + "', " + std::to_string(order.getLength()) + ", " + std::to_string(order.getCargoWeight()) +
-                                  ", " + std::to_string(order.getCost()) + "); ";
-            sql = sql_str.c_str();
-            rc = sqlite3_exec(db, sql, nullptr, (void*)sql_data, &zErrMsg);
+            int rc = sqlite3_open("../../autopark.db", &db);
+            if (rc != SQLITE_OK)
+                return false;
+            std::string sql = "INSERT INTO orders (datetime, driver_id, car_number, length, cargo_weight, cost) VALUES (?, ?, ?, ?, ?, ?)";
+            sqlite3_stmt *stmt;
+            if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+                sqlite3_bind_int64(stmt, 1, order.getDatetime());
+                sqlite3_bind_int64(stmt, 2, order.getDriverId());
+                sqlite3_bind_text(stmt, 3, order.getCarNumber().c_str(), -1, SQLITE_STATIC);
+                sqlite3_bind_double(stmt, 4, order.getLength());
+                sqlite3_bind_double(stmt, 5, order.getCargoWeight());
+                sqlite3_bind_double(stmt, 6, order.getCost());
+                sqlite3_step(stmt);
+                sqlite3_finalize(stmt);
+            } else {
+                return false;
+            }
+
             sqlite3_close(db);
             return true;
         }
         return false;
     }
-    void OrdersDAO::update(Order& order){
-        sqlite3 *db;
-        char *zErrMsg = nullptr;
-        char *sql_data;
-        const char *sql;
-        int rc;
-        rc = sqlite3_open("../ext/autopark.db", &db);
-        std::string sql_str = "UPDATE orders" \
-                          "SET datetime = " + std::to_string(order.getDatetime()) + ","  \
-                          "driver_id = " + std::to_string(order.getDriverId()) + ","  \
-                          "car_number = " + order.getCarNumber() + ","  \
-                          "length = " + std::to_string(order.getLength()) + ","  \
-                          "cargo_weight = " + std::to_string(order.getCargoWeight()) + ","  \
-                          "cost = " + std::to_string(order.getCost()) + " "  \
-                          "WHERE id = " + std::to_string(order.getId()) + "; ";
-        sql = sql_str.c_str();
-        rc = sqlite3_exec(db, sql, nullptr, (void*)sql_data, &zErrMsg);
-        sqlite3_close(db);
+    bool OrdersDAO::update(Order& order){
+        User user;
+        if (OrdersDAO::check_weight(&order, CarsDAO::find_by_number(user, order.getCarNumber()))) {
+            sqlite3 *db;
+
+            int rc = sqlite3_open("../../autopark.db", &db);
+            if (rc != SQLITE_OK)
+                return false;
+            std::string sql = "UPDATE orders SET datetime = ?, driver_id = ?, car_number = ?, length = ?, cargo_weight = ?, cost = ? WHERE id = ?";
+            sqlite3_stmt *stmt;
+            if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+                sqlite3_bind_int64(stmt, 1, order.getDatetime());
+                sqlite3_bind_int64(stmt, 2, order.getDriverId());
+                sqlite3_bind_text(stmt, 3, order.getCarNumber().c_str(), -1, SQLITE_STATIC);
+                sqlite3_bind_double(stmt, 4, order.getLength());
+                sqlite3_bind_double(stmt, 5, order.getCargoWeight());
+                sqlite3_bind_double(stmt, 6, order.getCost());
+                sqlite3_bind_int64(stmt, 7, order.getId());
+                sqlite3_step(stmt);
+                sqlite3_finalize(stmt);
+            } else {
+                return false;
+            }
+
+            sqlite3_close(db);
+            return true;
+        }
+        return false;
     }
 }
