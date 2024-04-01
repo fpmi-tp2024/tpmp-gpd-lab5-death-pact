@@ -22,8 +22,8 @@ namespace car_park {
     class UsersDAO {
     public:
         static User* find(std::string login, std::string password);
-        static void insert(User& user, std::string password);
-        static void update(User& user, std::string password);
+        static bool insert(User& user, std::string password);
+        static bool update(User& user, std::string password);
     };
 
 }
