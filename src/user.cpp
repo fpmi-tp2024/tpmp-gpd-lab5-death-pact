@@ -25,15 +25,6 @@ namespace car_park {
         return type;
     }
 
-
-    static int f_select(void *sql_data, int argc, char **argv, char **azColName) {
-        if (argc == 0) return 0;
-
-        std::string user_data = std::string(argv[0] ? argv[0] : "NULL") + "," + std::string(argv[1] ? argv[1] : "NULL");
-        sql_data = (void *) user_data.c_str();
-        return 0;
-    }
-
     User *UsersDAO::find(std::string login, std::string password) {
         sqlite3 *db;
         int rc = sqlite3_open("../../autopark.db", &db);
