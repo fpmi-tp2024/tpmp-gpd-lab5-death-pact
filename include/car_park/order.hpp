@@ -55,9 +55,9 @@ namespace car_park {
     class OrdersDAO {
     public:
         static bool check_weight(Order* order, Car* car);
-        static void find_all_by_driver(Driver& driver, std::vector<Order>& orders_of_driver);
-        static bool insert(Order& order);
-        static bool update(Order& order);
+        static void find_all_by_driver(User& user, Driver& driver, std::vector<Order>& orders_of_driver);
+        static bool insert(User& user, Order& order);
+        static bool update(User& user, Order& order);
 
     };
 }

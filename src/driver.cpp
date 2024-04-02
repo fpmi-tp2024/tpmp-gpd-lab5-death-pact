@@ -104,6 +104,8 @@ namespace car_park {
 
 
     Driver* DriversDAO::find_by_user(User& user){
+
+
         sqlite3 *db;
         int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
@@ -131,7 +133,10 @@ namespace car_park {
         sqlite3_close(db);
         return nullptr;
     }
-    Driver* DriversDAO::find_with_min_orders(){
+    Driver* DriversDAO::find_with_min_orders(User& user){
+        if (!User::check_access(user))
+            return nullptr;
+
         sqlite3 *db;
         int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
@@ -164,7 +169,10 @@ namespace car_park {
         sqlite3_close(db);
         return nullptr;
     }
-    void DriversDAO::find_all(std::vector<Driver>& drivers){
+    void DriversDAO::find_all(User& user, std::vector<Driver>& drivers){
+        if (!User::check_access(user))
+            return;
+
         sqlite3 *db;
         int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
