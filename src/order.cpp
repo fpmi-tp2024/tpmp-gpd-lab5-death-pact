@@ -27,7 +27,10 @@ namespace car_park {
         return order->getCargoWeight() <= car->getCapacity();
     }
 
-    void OrdersDAO::find_all_by_driver(Driver& driver, std::vector<Order>& orders_of_driver){
+    void OrdersDAO::find_all_by_driver(User& user, Driver& driver, std::vector<Order>& orders_of_driver){
+        if (!User::check_access(user))
+            return;
+
         sqlite3 *db;
         int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
@@ -55,8 +58,10 @@ namespace car_park {
         }
         sqlite3_close(db);
     }
-    bool OrdersDAO::insert(Order& order) {
-        User user("tempuser,superuser");
+    bool OrdersDAO::insert(User& user, Order& order) {
+        if (!User::check_access(user))
+            return false;
+
         if (OrdersDAO::check_weight(&order, CarsDAO::find_by_number(user, order.getCarNumber()))) {
             sqlite3 *db;
             int rc = sqlite3_open("../../autopark.db", &db);
@@ -82,8 +87,10 @@ namespace car_park {
         }
         return false;
     }
-    bool OrdersDAO::update(Order& order){
-        User user("tempuser,superuser");
+    bool OrdersDAO::update(User& user, Order& order){
+        if (!User::check_access(user))
+            return false;
+
         if (OrdersDAO::check_weight(&order, CarsDAO::find_by_number(user, order.getCarNumber()))) {
             sqlite3 *db;
 

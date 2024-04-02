@@ -66,8 +66,8 @@ namespace car_park {
     class DriversDAO {
     public:
         static Driver* find_by_user(User& user);
-        static Driver* find_with_min_orders();
-        static void find_all(std::vector<Driver>& drivers);
+        static Driver* find_with_min_orders(User& user);
+        static void find_all(User& user, std::vector<Driver>& drivers);
         static bool insert(Driver& driver);
     };
 }
