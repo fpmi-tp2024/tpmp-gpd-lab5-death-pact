@@ -35,7 +35,7 @@ namespace car_park {
         int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
             return;
-        std::string sql = "SELECT * FROM orders WHERE driver_id = ?";
+        std::string sql = "SELECT id,datetime,driver_id,car_number,length,cargo_weight,cost FROM orders WHERE driver_id = ?";
         sqlite3_stmt* stmt;
 
         if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {

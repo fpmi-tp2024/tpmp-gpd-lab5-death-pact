@@ -110,7 +110,7 @@ namespace car_park {
         int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
             return nullptr;
-        std::string sql = "SELECT * FROM drivers WHERE user_login = ?";
+        std::string sql = "SELECT id,user_login,name,category,career_start,birth_year FROM drivers WHERE user_login = ?";
         sqlite3_stmt* stmt;
 
         if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
@@ -141,7 +141,8 @@ namespace car_park {
         int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
             return nullptr;
-        std::string sql = "SELECT drivers.*, COUNT(orders.id) AS total_orders "
+        std::string sql = "SELECT drivers.id,drivers.user_login,drivers.name,drivers.category,"
+                          "drivers.career_start,drivers.birth_year, COUNT(orders.id) AS total_orders "
                           "FROM drivers "
                           "LEFT JOIN orders ON drivers.id = orders.driver_id "
                           "GROUP BY drivers.id "
@@ -177,7 +178,7 @@ namespace car_park {
         int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
             return;
-        std::string sql = "SELECT * FROM drivers";
+        std::string sql = "SELECT id,user_login,name,category,career_start,birth_year FROM drivers";
 
         sqlite3_stmt* stmt;
 
