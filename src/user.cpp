@@ -30,7 +30,7 @@ namespace car_park {
         int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
             return nullptr;
-        std::string sql = "SELECT * FROM users WHERE login = ? AND password = ? ";
+        std::string sql = "SELECT login,password,role FROM users WHERE login = ? AND password = ? ";
         sqlite3_stmt* stmt;
 
         if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
@@ -39,7 +39,6 @@ namespace car_park {
             if (sqlite3_step(stmt) == SQLITE_ROW) {
                 std::string user_login = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
                 std::string type = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
-
 
                 sqlite3_finalize(stmt);
                 sqlite3_close(db);

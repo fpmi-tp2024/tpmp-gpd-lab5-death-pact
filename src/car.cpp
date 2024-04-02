@@ -75,7 +75,7 @@ namespace car_park {
             int rc = sqlite3_open("../../autopark.db", &db);
             if (rc != SQLITE_OK)
                 return nullptr;
-            std::string sql = "SELECT * FROM cars WHERE number = ?";
+            std::string sql = "SELECT number,brand,initial_mileage,capacity FROM cars WHERE number = ?";
             sqlite3_stmt *stmt;
 
             if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
@@ -103,7 +103,7 @@ namespace car_park {
             int rc = sqlite3_open("../../autopark.db", &db);
             if (rc != SQLITE_OK)
                 return nullptr;
-            std::string sql = "SELECT cars.*, "
+            std::string sql = "SELECT cars.number,cars.brand,cars.initial_mileage,cars.capacity, "
                               " (cars.initial_mileage + IFNULL(SUM(orders.length), 0)) AS total_mileage "
                               "FROM cars "
                               "LEFT JOIN orders ON cars.number = orders.car_number "
