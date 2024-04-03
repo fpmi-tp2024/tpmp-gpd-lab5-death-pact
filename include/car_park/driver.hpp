@@ -60,8 +60,6 @@ namespace car_park {
         }
 
         static bool check_ownership(User& user, std::string car_number);
-
-        int count_order_per_period(long long start_date, long long end_date);
     };
     class DriversDAO {
     public:
