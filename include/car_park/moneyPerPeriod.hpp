@@ -45,6 +45,8 @@ namespace car_park {
     };
 
     class MoneyPerPeriodDAO {
+    private:
+        static bool insert(MoneyPerPeriod* mpp);
     public:
         static MoneyPerPeriod* count(User& user, Driver& driver, long long datetime_start, long long datetime_end);
         static std::vector<MoneyPerPeriod*> count_all(User& user, long long datetime_start, long long datetime_end);

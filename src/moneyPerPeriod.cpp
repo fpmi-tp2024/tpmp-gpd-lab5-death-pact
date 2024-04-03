@@ -15,6 +15,30 @@ namespace car_park {
         ss >> total_money;
     }
 
+    bool MoneyPerPeriodDAO::insert(car_park::MoneyPerPeriod *mpp) {
+
+        sqlite3 *db;
+        int rc = sqlite3_open("../../autopark.db", &db);
+        if (rc != SQLITE_OK)
+            return false;
+        std::string sql = "INSERT INTO money_per_period (id, datetime_from, datetime_to, driver_id, total_money) VALUES (?, ?, ?, ?, ?)";
+        sqlite3_stmt *stmt;
+        if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_int64(stmt, 1, mpp->getId());
+            sqlite3_bind_int64(stmt, 2, mpp->getDatetimeFrom());
+            sqlite3_bind_int64(stmt, 3, mpp->getDatetimeTo());
+            sqlite3_bind_int64(stmt, 4, mpp->getDriverId());
+            sqlite3_bind_double(stmt, 5, mpp->getTotalMoney());
+            sqlite3_step(stmt);
+            sqlite3_finalize(stmt);
+        } else {
+            return false;
+        }
+
+        sqlite3_close(db);
+
+        return true;
+    }
 
     MoneyPerPeriod* MoneyPerPeriodDAO::count(User& user, Driver& driver, long long datetime_start, long long datetime_end){
         if (User::check_access(user)) {
@@ -39,23 +63,15 @@ namespace car_park {
             } else {
                 return nullptr;
             }
+            sqlite3_close(db);
             MoneyPerPeriod *money_per_period = new MoneyPerPeriod(
                     std::to_string(datetime_start) + "," + std::to_string(datetime_end) + ","
                     + std::to_string(driver.getId()) + "," + std::to_string(total_money));
 
-            sql = "INSERT INTO money_per_period (id, datetime_from, datetime_to, driver_id, total_money) VALUES (?, ?, ?, ?, ?)";
-
-            if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
-                sqlite3_bind_int64(stmt, 1, money_per_period->getId());
-                sqlite3_bind_int64(stmt, 2, datetime_start);
-                sqlite3_bind_int64(stmt, 3, datetime_end);
-                sqlite3_bind_int64(stmt, 4, driver.getId());
-                sqlite3_bind_double(stmt, 5, total_money);
-                sqlite3_finalize(stmt);
-            } else {
+            if (!insert(money_per_period)){
+                delete money_per_period;
                 return nullptr;
             }
-            sqlite3_close(db);
             return money_per_period;
         }
         return nullptr;
