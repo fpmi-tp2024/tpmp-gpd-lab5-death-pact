@@ -1,6 +1,7 @@
 #include "car_park/moneyPerPeriod.hpp"
 #include "sql/sqlite3.h"
 #include <sstream>
+
 namespace car_park {
     long long MoneyPerPeriod::next_id = 0;
     MoneyPerPeriod::MoneyPerPeriod(std::string sql_data) : id(next_id++) {
@@ -34,22 +35,22 @@ namespace car_park {
                     total_money = sqlite3_column_double(stmt, 0);
                 }
 
-                sqlite3_finalize(stmt);
+               sqlite3_finalize(stmt);
             } else {
                 return nullptr;
             }
-
             MoneyPerPeriod *money_per_period = new MoneyPerPeriod(
                     std::to_string(datetime_start) + "," + std::to_string(datetime_end) + ","
                     + std::to_string(driver.getId()) + "," + std::to_string(total_money));
 
-            sql = "INSERT INTO money_per_period (datetime_from, datetime_to, driver_id, total_money) VALUES (?, ?, ?, ?)";
+            sql = "INSERT INTO money_per_period (id, datetime_from, datetime_to, driver_id, total_money) VALUES (?, ?, ?, ?, ?)";
 
             if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
-                sqlite3_bind_int64(stmt, 1, datetime_start);
-                sqlite3_bind_int64(stmt, 2, datetime_end);
-                sqlite3_bind_int64(stmt, 3, driver.getId());
-                sqlite3_bind_double(stmt, 4, total_money);
+                sqlite3_bind_int64(stmt, 1, money_per_period->getId());
+                sqlite3_bind_int64(stmt, 2, datetime_start);
+                sqlite3_bind_int64(stmt, 3, datetime_end);
+                sqlite3_bind_int64(stmt, 4, driver.getId());
+                sqlite3_bind_double(stmt, 5, total_money);
                 sqlite3_finalize(stmt);
             } else {
                 return nullptr;
@@ -65,7 +66,7 @@ namespace car_park {
         std::vector<MoneyPerPeriod*> money_notes;
         if (User::check_access(user)) {
             std::vector<Driver> drivers;
-            DriversDAO::find_all(drivers);
+            DriversDAO::find_all(user,drivers);
             for (auto i: drivers) {
                 money_notes.push_back(count(user, i, datetime_start, datetime_end));
             }
