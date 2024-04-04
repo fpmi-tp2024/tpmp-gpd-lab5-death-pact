@@ -47,6 +47,7 @@ void driverMenu(User* user) {
     int choice;
     Driver* driver = DriversDAO::find_by_user(*user);
     Car* car;
+    std::vector<Order> orders;
     std::cin.ignore();
     do {
         showDriverMenu();
@@ -65,7 +66,13 @@ void driverMenu(User* user) {
                 std::getline(std::cin, inputDate2);
                 timestamp1 = dateToTimestamp(inputDate1);
                 timestamp2 = dateToTimestamp(inputDate2);
-                std::cout << "Completed " << driver->getName() << "'s orders per specific period: " << driver->count_order_per_period(timestamp1, timestamp2) << std::endl;
+                OrdersDAO::count_order_per_period(*driver, orders, timestamp1,timestamp2);
+                std::cout << "Completed " << driver->getName() << "'s orders per specific period: " << orders.size() << " order(s)" << std::endl;
+                for (auto order : orders) {
+                    std::cout << "Order ID: " << order.getId() << std::endl;
+                    std::cout << "Driver's car number: " << order.getCarNumber() << std::endl;
+                    std::cout << "Order fee: " << order.getCost() << std::endl << std::endl;
+                 }
                 std::cout << std::endl;
                 break;
             case 2:
@@ -145,7 +152,7 @@ void fleetManagementMenu(User* user) {
         std::string carNumber, userName, inputDate1, inputDate2;
         long long timestamp1, timestamp2;
         std::vector<Driver> drivers;
-
+        std::vector<Order> orders;
         switch (choice) {
             case 1:
                 std::cout << "Viewing completed orders for a specific driver during a specified period \n" << std::endl;
@@ -159,7 +166,13 @@ void fleetManagementMenu(User* user) {
                 std::getline(std::cin, inputDate2);
                 timestamp1 = dateToTimestamp(inputDate1);
                 timestamp2 = dateToTimestamp(inputDate2);
-                std::cout << "Completed " << driver->getName() << "'s orders per specific period: " << driver->count_order_per_period(timestamp1, timestamp2) << std::endl;
+                OrdersDAO::count_order_per_period(*driver, orders, timestamp1,timestamp2);
+                std::cout << "Completed " << driver->getName() << "'s orders per specific period: " << orders.size() << " order(s)" << std::endl;
+                for (auto order : orders) {
+                    std::cout << "Order ID: " << order.getId() << std::endl;
+                    std::cout << "Driver's car number: " << order.getCarNumber() << std::endl;
+                    std::cout << "Order fee: " << order.getCost() << std::endl << std::endl;
+                }
                 std::cout << std::endl;
                 delete user1;
                 break;
@@ -175,7 +188,7 @@ void fleetManagementMenu(User* user) {
                 break;
             case 3:
                 std::cout << "Viewing total trips, total cargo weight, and earned money for each driver\n" << std::endl;
-                DriversDAO::find_all(drivers);
+                DriversDAO::find_all(*user,drivers);
                 for (auto dr : drivers) {
                     std::cout << "Driver's name: " << dr.getName() << std::endl;
                     std::cout << "Total trips: " << dr.getTotalOrders() << std::endl;
@@ -186,7 +199,7 @@ void fleetManagementMenu(User* user) {
                 break;
             case 4:
                 std::cout << "Viewing details and earnings for the driver with the fewest trips\n" << std::endl;
-                driver = DriversDAO::find_with_min_orders();
+                driver = DriversDAO::find_with_min_orders(*user);
                 std::cout << "ID: " << driver->getId() << std::endl;
                 std::cout << "User Login: " << driver->getUserLogin() << std::endl;
                 std::cout << "Name: " << driver->getName() << std::endl;
@@ -271,7 +284,7 @@ void newOrder() {
     std::getline(std::cin, weight);
 
     auto order = new Order("123," + std::to_string(date) + ",2," + "8924 HP-3," + destination + "," + weight + ",100.0");
-    if (OrdersDAO::insert(*order)) {
+    if (OrdersDAO::insert(*user, *order)) {
         std::cout << "Order was successfully added! \n" << std::endl;
     } else {
         std::cout << "Something went wrong.. \n" << std::endl;

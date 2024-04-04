@@ -56,7 +56,7 @@ namespace car_park {
     public:
         static bool check_weight(Order* order, Car* car);
         static void find_all_by_driver(User& user, Driver& driver, std::vector<Order>& orders_of_driver);
-        static void count_order_per_period(User& user, Driver& driver, std::vector<Order>& orders_of_driver, long long start_date, long long end_date);
+        static void count_order_per_period(Driver& driver, std::vector<Order>& orders_of_driver, long long start_date, long long end_date);
         static bool insert(User& user, Order& order);
         static bool update(User& user, Order& order);
 
