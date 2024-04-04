@@ -9,11 +9,6 @@
 using namespace car_park;
 
 
-/* TODO: 4. Создать функцию, который при добавлении информации в таблицу заказов,
-проверяет, не превышает ли масса груза грузоподъемности машины, и если это так,
-то запрещает помещать информацию в таблицу(*).
-*/
-
 long long dateToTimestamp(const std::string& dateString) {
     std::tm time = {};
     std::istringstream ss(dateString);
@@ -32,7 +27,8 @@ void showMainMenu() {
     std::cout << "Welcome to the car fleet management system!" << std::endl;
     std::cout << "Menu:" << std::endl;
     std::cout << "1. Log in" << std::endl;
-    std::cout << "2. Exit the application" << std::endl;
+    std::cout << "2. New order" << std::endl;
+    std::cout << "3. Exit the application" << std::endl;
     std::cout << std::endl;
 }
 
@@ -51,7 +47,7 @@ void driverMenu(User* user) {
     int choice;
     Driver* driver = DriversDAO::find_by_user(*user);
     Car* car;
-    std::cin.ignore(); // Ignore the remaining newline character
+    std::cin.ignore();
     do {
         showDriverMenu();
         std::cout << "Choose an option (1-5): ";
@@ -108,6 +104,7 @@ void driverMenu(User* user) {
                 std::cout << "Total mileage: " << car->getTotalMileage() << std::endl;
                 std::cout << "Total cargo weight: " << car->getTotalWeight() << std::endl;
                 std::cout << std::endl;
+                delete car;
                 break;
             case 5:
                 std::cout << "Logging out...\n" << std::endl;
@@ -119,6 +116,7 @@ void driverMenu(User* user) {
                 break;
         }
     } while (choice != 5);
+    delete driver;
 }
 
 void showFleetManagementMenu() {
@@ -137,7 +135,7 @@ void fleetManagementMenu(User* user) {
     Car* car;
     Driver* driver;
     User* user1;
-    std::cin.ignore(); // Ignore the remaining newline character
+    std::cin.ignore();
     do {
         showFleetManagementMenu();
         std::cout << "Choose an option (1-6): ";
@@ -173,6 +171,7 @@ void fleetManagementMenu(User* user) {
                 std::cout << "Total mileage: " << car->getTotalMileage() << std::endl;
                 std::cout << "Total cargo weight: " << car->getTotalWeight() << std::endl;
                 std::cout << std::endl;
+                delete car;
                 break;
             case 3:
                 std::cout << "Viewing total trips, total cargo weight, and earned money for each driver\n" << std::endl;
@@ -198,6 +197,7 @@ void fleetManagementMenu(User* user) {
                 std::cout << "Total Weight: " << driver->getTotalWeight() << std::endl;
                 std::cout << "Total Money: " << driver->getTotalMoney() << std::endl;
                 std::cout << std::endl;
+                delete driver;
                 break;
             case 5:
                 std::cout << "Viewing details for the car with the highest total mileage\n" << std::endl;
@@ -209,6 +209,7 @@ void fleetManagementMenu(User* user) {
                 std::cout << "Total mileage: " << car->getTotalMileage() << std::endl;
                 std::cout << "Total cargo weight: " << car->getTotalWeight() << std::endl;
                 std::cout << std::endl;
+                delete car;
                 break;
             case 6:
                 std::cout << "Logging out..." << std::endl;
@@ -231,9 +232,7 @@ void login() {
     std::cout << "Enter your password: ";
     std::cin >> password;
 
-    UsersDAO usersDAO;
-
-    User* user = usersDAO.find(username, password);
+    User* user = UsersDAO::find(username, password);
 
     if (user != nullptr) {
         std::string userRole = user->get_type();
@@ -253,12 +252,39 @@ void login() {
     }
 }
 
+void newOrder() {
+    std::string destination, weight, userName, carNumber;
+    std::cin.ignore();
+    User* user = new User(userName + ",admin");
+    std::cout << "Enter car number: ";
+    std::getline(std::cin, carNumber);
+    Car *car = CarsDAO::find_by_number(*user, carNumber);
+    if (car == nullptr) {
+        std::cout << "There's no such car number in database! \n Back to the main menu... \n" << std::endl;
+        return;
+    }
+    auto now = std::chrono::system_clock::now();
+    long long date = std::chrono::duration_cast<std::chrono::days>(now.time_since_epoch()).count();
+    std::cout << "Enter the destination (.0 km): ";
+    std::getline(std::cin, destination);
+    std::cout << "Enter the weight of your carriage (.0 kg): ";
+    std::getline(std::cin, weight);
+
+    auto order = new Order("123," + std::to_string(date) + ",2," + "8924 HP-3," + destination + "," + weight + ",100.0");
+    if (OrdersDAO::insert(*order)) {
+        std::cout << "Order was successfully added! \n" << std::endl;
+    } else {
+        std::cout << "Something went wrong.. \n" << std::endl;
+        return;
+    }
+}
+
 int main() {
     int choice;
 
     do {
         showMainMenu();
-        std::cout << "Choose an option (1-2): ";
+        std::cout << "Choose an option (1-3): ";
         std::cin >> choice;
 
         switch (choice) {
@@ -266,13 +292,16 @@ int main() {
                 login();
                 break;
             case 2:
+                newOrder();
+                break;
+            case 3:
                 std::cout << "Goodbye!" << std::endl;
                 break;
             default:
                 std::cout << "Invalid choice. Please try again." << std::endl;
                 break;
         }
-    } while (choice != 2);
+    } while (choice != 3);
 
     return 0;
 }
