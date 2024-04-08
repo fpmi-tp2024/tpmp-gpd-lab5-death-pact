@@ -142,4 +142,49 @@ TEST_CASE("Test CarsDAO insert","[CarsDAO]") {
     }
 }
 
+TEST_CASE("Test MoneyPerPeriodDAO count","[MoneyPerPeriodDAO]"){
+    User* admin = UsersDAO::find("vasily324","1111");
+    User* driver = UsersDAO::find("oleg324","187536");
+    Driver* active_driver = DriversDAO::find_by_user(*driver);
+    Driver* inactive_driver = DriversDAO::find_by_user(*admin);
+    SECTION("Check money count of active driver"){
+        MoneyPerPeriod* mpp = MoneyPerPeriodDAO::count(*admin,*active_driver,20240303,20240308);
+        REQUIRE(mpp->getTotalMoney() == 2600);
+        delete mpp;
+    }
+    SECTION("Check money count on period with no orders"){
+        MoneyPerPeriod* mpp = MoneyPerPeriodDAO::count(*admin,*active_driver,20240309,20240310);
+        REQUIRE(mpp->getTotalMoney() == 0);
+        delete mpp;
+    }
+    SECTION("Check money count of inactive driver"){                    // Driver with no completed orders
+        MoneyPerPeriod* mpp = MoneyPerPeriodDAO::count(*admin,*inactive_driver,20240303,20240308);
+        REQUIRE(mpp->getTotalMoney() == 0);
+        delete mpp;
+    }
+    SECTION("Check money count without permission"){
+        MoneyPerPeriod* mpp = MoneyPerPeriodDAO::count(*driver,*active_driver,20240303,20240308);
+        REQUIRE(mpp == nullptr);
+    }
+    delete admin;
+    delete driver;
+    delete active_driver;
+    delete inactive_driver;
+}
 
+TEST_CASE("Test MoneyPerPeriodDAO count_all","[MoneyPerPeriodDAO]"){
+    User* admin = UsersDAO::find("vasily324","1111");
+    User* client = UsersDAO::find("oleg324","187536");
+    SECTION("Check count all with authorized user"){
+        std::vector<MoneyPerPeriod*> mpps = MoneyPerPeriodDAO::count_all(*admin,20240303,20240308);
+        REQUIRE(mpps.size() == 2);
+        REQUIRE(mpps[0]->getTotalMoney() == 0);
+        REQUIRE(mpps[1]->getTotalMoney() == 2600);
+        for (auto i : mpps)
+            delete i;
+    }
+    SECTION("Check count all without permission"){
+        std::vector<MoneyPerPeriod*> mpps = MoneyPerPeriodDAO::count_all(*client,20240303,20240308);
+        REQUIRE(mpps.empty());
+    }
+}
