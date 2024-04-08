@@ -66,3 +66,80 @@ TEST_CASE("Test UsersDAO update","[UsersDAO]"){
         delete user;
     }
 }
+
+
+TEST_CASE("Test CarsDAO find_by_number","[CarsDAO]"){
+    User admin("super,admin");
+    User driver("oleg324,driver");
+    User client("new_client,client");
+    SECTION("Check existing car search"){
+        Car* car = CarsDAO::find_by_number(admin,"3089 AB-7");
+        REQUIRE(car != nullptr);
+        REQUIRE(car->getBrand() == "BMW");
+        delete car;
+    }
+    SECTION("Check non existing car search"){
+        Car* car = CarsDAO::find_by_number(admin,"1456 IK-2");
+        REQUIRE(car == nullptr);
+        delete car;
+    }
+    SECTION("Check car search without permission"){
+        Car* car = CarsDAO::find_by_number(client,"3089 AB-7");
+        REQUIRE(car == nullptr);
+        delete car;
+    }
+    SECTION("Check car search by wrong driver"){
+        Car* car = CarsDAO::find_by_number(driver,"3089 AB-7");
+        REQUIRE(car == nullptr);
+        delete car;
+    }
+    SECTION("Check car search by owner"){
+        Car* car = CarsDAO::find_by_number(driver,"8924 HP-3");
+        REQUIRE(car->getBrand() == "Audi");
+        delete car;
+    }
+}
+
+TEST_CASE("Test CarsDAO find_with_max_total_mileage","[CarsDAO]"){
+    User admin("super,admin");
+    User owner("oleg324,driver");
+    User not_owner("ivan228,driver");
+    User client("new_client,client");
+    SECTION("Check car search with admin rights"){
+        Car* car = CarsDAO::find_with_max_total_mileage(admin);
+        REQUIRE(car != nullptr);
+        REQUIRE(car->getBrand() == "Audi");
+        delete car;
+    }
+    SECTION("Check car search without permission"){
+        Car* car = CarsDAO::find_with_max_total_mileage(client);
+        REQUIRE(car == nullptr);
+        delete car;
+    }
+    SECTION("Check car search by wrong driver"){
+        Car* car = CarsDAO::find_with_max_total_mileage(not_owner);
+        REQUIRE(car == nullptr);
+        delete car;
+    }
+    SECTION("Check car search by owner"){
+        Car* car = CarsDAO::find_with_max_total_mileage(owner);
+        REQUIRE(car->getBrand() == "Audi");
+        delete car;
+    }
+}
+
+TEST_CASE("Test CarsDAO insert","[CarsDAO]") {
+    User admin("super,admin");
+    SECTION("Check new car insertion")
+    {
+        Car car("1456 IK-2,Fiat,120000,1000");
+        REQUIRE(CarsDAO::insert(car));
+    }
+    SECTION("Check existing car insertion"){
+        Car *car = CarsDAO::find_by_number(admin,"1456 IK-2");
+        REQUIRE(!CarsDAO::insert(*car));
+        delete car;
+    }
+}
+
+
