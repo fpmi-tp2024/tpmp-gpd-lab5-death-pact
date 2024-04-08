@@ -60,10 +60,13 @@ namespace car_park {
             sqlite3_bind_text(stmt, 2, car.getBrand().c_str(), -1, SQLITE_STATIC);
             sqlite3_bind_double(stmt, 3, car.getInitialMileage());
             sqlite3_bind_double(stmt, 4, car.getCapacity());
-            sqlite3_step(stmt);
+            rc = sqlite3_step(stmt);
+            if (rc != SQLITE_DONE) {
+                sqlite3_finalize(stmt);
+                sqlite3_close(db);
+                return false;
+            };
             sqlite3_finalize(stmt);
-        } else {
-            return false;
         }
         sqlite3_close(db);
         return true;
