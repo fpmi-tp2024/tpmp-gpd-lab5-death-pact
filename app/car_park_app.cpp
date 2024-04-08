@@ -72,7 +72,7 @@ void driverMenu(User* user) {
                     std::cout << "Order ID: " << order.getId() << std::endl;
                     std::cout << "Driver's car number: " << order.getCarNumber() << std::endl;
                     std::cout << "Order fee: " << order.getCost() << std::endl << std::endl;
-                 }
+                }
                 std::cout << std::endl;
                 break;
             case 2:
@@ -265,6 +265,23 @@ void login() {
     }
 }
 
+long long getCurrentDateAsLongLong() {
+    time_t now = time(nullptr);
+    if (now == -1) {
+        // Error occurred while getting current time
+        return -1;
+    }
+
+    tm *currentTime = localtime(&now);
+    if (currentTime == nullptr) {
+        // Error occurred while converting time
+        return -1;
+    }
+
+    long long currentDate = (currentTime->tm_year + 1900) * 10000L + (currentTime->tm_mon + 1) * 100L + currentTime->tm_mday;
+    return currentDate;
+}
+
 void newOrder() {
     std::string destination, weight, userName, carNumber;
     std::cin.ignore();
@@ -276,8 +293,8 @@ void newOrder() {
         std::cout << "There's no such car number in database! \n Back to the main menu... \n" << std::endl;
         return;
     }
-    auto now = std::chrono::system_clock::now();
-    long long date = std::chrono::duration_cast<std::chrono::days>(now.time_since_epoch()).count();
+    long long date = getCurrentDateAsLongLong();
+    std::cout << date;
     std::cout << "Enter the destination (.0 km): ";
     std::getline(std::cin, destination);
     std::cout << "Enter the weight of your carriage (.0 kg): ";
@@ -318,3 +335,4 @@ int main() {
 
     return 0;
 }
+
