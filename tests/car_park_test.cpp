@@ -13,7 +13,7 @@ bool isCreated = false;
 bool createDB(){
     if (isCreated)
         return false;
-    std::ifstream file("../ext/db_migration/createDB.sql");
+    std::ifstream file("../static/db_migration/createDB.sql");
     std::string line;
     std::string sql = " ";
     while (std::getline(file, line)){
