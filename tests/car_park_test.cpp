@@ -20,7 +20,7 @@ bool createDB(){
         sql += line;
     }
     std::cout << "debug log !!! " << std::filesystem::current_path() << std::endl;
-    std::string path = "../tests";
+    std::string path = "../tests/tests";
     for (const auto & entry : std::filesystem::directory_iterator(path))
         std::cout << entry.path() << std::endl;
     std::cout << "-------\n";
