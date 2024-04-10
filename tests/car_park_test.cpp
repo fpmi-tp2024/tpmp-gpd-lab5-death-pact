@@ -24,7 +24,7 @@ bool createDB(){
     for (const auto & entry : std::filesystem::directory_iterator(path))
         std::cout << entry.path() << std::endl;
     std::cout << "-------\n";
-    path = "../src";
+    path = "..";
     for (const auto & entry : std::filesystem::directory_iterator(path))
         std::cout << entry.path() << std::endl;
     if(sql == " ")
