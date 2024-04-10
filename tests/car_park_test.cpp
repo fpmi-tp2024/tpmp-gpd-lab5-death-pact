@@ -13,17 +13,24 @@ bool isCreated = false;
 bool createDB(){
     if (isCreated)
         return false;
-    std::ifstream file("ext/db_migration/createDB.sql");
+    std::ifstream file("../ext/db_migration/createDB.sql");
     std::string line;
     std::string sql = " ";
     while (std::getline(file, line)){
         sql += line;
     }
     std::cout << "debug log !!! " << std::filesystem::current_path() << std::endl;
+    std::string path = "..";
+    for (const auto & entry : std::filesystem::directory_iterator(path))
+        std::cout << entry.path() << std::endl;
+    std::cout << "-------\n";
+    path = "../ext";
+    for (const auto & entry : std::filesystem::directory_iterator(path))
+        std::cout << entry.path() << std::endl;
     if(sql == " ")
         throw std::invalid_argument("oh shit");
     sqlite3 *db;
-    int rc = sqlite3_open("autopark.db", &db);
+    int rc = sqlite3_open("../autopark.db", &db);
     char *errMsg = 0;
     rc = sqlite3_exec(db, sql.c_str(), 0, 0, &errMsg);
     if (rc != SQLITE_OK){
