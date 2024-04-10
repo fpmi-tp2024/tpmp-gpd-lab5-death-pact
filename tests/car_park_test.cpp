@@ -17,6 +17,8 @@ bool createDB(){
     while (std::getline(file, line)){
         sql += line;
     }
+    if(sql == " ")
+        throw std::invalid_argument("oh shit");
     sqlite3 *db;
     int rc = sqlite3_open("../../autopark.db", &db);
     char *errMsg = 0;
