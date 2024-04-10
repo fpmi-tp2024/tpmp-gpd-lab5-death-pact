@@ -11,7 +11,7 @@ bool isCreated = false;
 bool createDB(){
     if (isCreated)
         return false;
-    std::ifstream file("../../ext/db_migration/createDB.sql");
+    std::ifstream file("../ext/db_migration/createDB.sql");
     std::string line;
     std::string sql = " ";
     while (std::getline(file, line)){
@@ -20,7 +20,7 @@ bool createDB(){
     if(sql == " ")
         throw std::invalid_argument("oh shit");
     sqlite3 *db;
-    int rc = sqlite3_open("../../autopark.db", &db);
+    int rc = sqlite3_open("../autopark.db", &db);
     char *errMsg = 0;
     rc = sqlite3_exec(db, sql.c_str(), 0, 0, &errMsg);
     if (rc != SQLITE_OK){
