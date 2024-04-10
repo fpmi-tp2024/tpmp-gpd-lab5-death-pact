@@ -35,7 +35,7 @@ namespace car_park {
         sqlite3_stmt *stmt;
 
         if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
-            sqlite3_bind_text(stmt, 1, number.c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_text(stmt, 1, number.c_str(), -1, SQLITE_TRANSIENT);
 
             if (sqlite3_step(stmt) == SQLITE_ROW) {
                 total_mileage = sqlite3_column_double(stmt, 0) + initial_mileage;
@@ -56,8 +56,8 @@ namespace car_park {
         std::string sql = "INSERT INTO cars (number, brand, initial_mileage, capacity) VALUES (?, ?, ?, ?)";
         sqlite3_stmt* stmt;
         if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
-            sqlite3_bind_text(stmt, 1, car.getNumber().c_str(), -1, SQLITE_STATIC);
-            sqlite3_bind_text(stmt, 2, car.getBrand().c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_text(stmt, 1, car.getNumber().c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 2, car.getBrand().c_str(), -1, SQLITE_TRANSIENT);
             sqlite3_bind_double(stmt, 3, car.getInitialMileage());
             sqlite3_bind_double(stmt, 4, car.getCapacity());
             rc = sqlite3_step(stmt);
@@ -82,7 +82,7 @@ namespace car_park {
             sqlite3_stmt *stmt;
 
             if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
-                sqlite3_bind_text(stmt, 1, car_number.c_str(), -1, SQLITE_STATIC);
+                sqlite3_bind_text(stmt, 1, car_number.c_str(), -1, SQLITE_TRANSIENT);
 
                 if (sqlite3_step(stmt) == SQLITE_ROW) {
                     std::string number = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 0));

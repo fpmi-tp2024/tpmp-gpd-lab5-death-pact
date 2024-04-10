@@ -37,8 +37,8 @@ namespace car_park {
         sqlite3_stmt* stmt;
 
         if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
-            sqlite3_bind_text(stmt, 1, login.c_str(), -1, SQLITE_STATIC);
-            sqlite3_bind_text(stmt, 2, password.c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_text(stmt, 1, login.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 2, password.c_str(), -1, SQLITE_TRANSIENT);
             if (sqlite3_step(stmt) == SQLITE_ROW) {
                 std::string user_login = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
                 std::string type = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
@@ -64,10 +64,6 @@ namespace car_park {
             sqlite3_bind_text(stmt, 1, user.get_login().c_str(), -1, SQLITE_TRANSIENT);
             sqlite3_bind_text(stmt, 2, password.c_str(), -1, SQLITE_TRANSIENT);
             sqlite3_bind_text(stmt, 3, user.get_type().c_str(), -1, SQLITE_TRANSIENT);
-            const char *a = sqlite3_sql(stmt);
-//            std::string strasd = sqlite3_sql;
-            char *b = sqlite3_expanded_sql(stmt);
-//            const char *c = sqlite3_normalized_sql(stmt);
             rc = sqlite3_step(stmt);
             if (rc != SQLITE_DONE) {
                 sqlite3_finalize(stmt);
@@ -88,9 +84,9 @@ namespace car_park {
         std::string sql = "UPDATE users SET password = ?, role = ? WHERE login = ?";
         sqlite3_stmt* stmt;
         if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
-            sqlite3_bind_text(stmt, 1, password.c_str(), -1, SQLITE_STATIC);
-            sqlite3_bind_text(stmt, 2, user.get_type().c_str(), -1, SQLITE_STATIC);
-            sqlite3_bind_text(stmt, 3, user.get_login().c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_text(stmt, 1, password.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 2, user.get_type().c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 3, user.get_login().c_str(), -1, SQLITE_TRANSIENT);
             sqlite3_step(stmt);
             sqlite3_finalize(stmt);
         } else {
