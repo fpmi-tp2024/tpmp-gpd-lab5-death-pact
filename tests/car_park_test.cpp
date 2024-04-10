@@ -3,6 +3,8 @@
 #include <vector>
 #include "sql/sqlite3.h"
 #include <fstream>
+#include <filesystem>
+#include <iostream>
 
 using namespace car_park;
 
@@ -17,6 +19,7 @@ bool createDB(){
     while (std::getline(file, line)){
         sql += line;
     }
+    std::cout << "debug log !!! " << std::filesystem::current_path() << std::endl;
     if(sql == " ")
         throw std::invalid_argument("oh shit");
     sqlite3 *db;
