@@ -4,4 +4,5 @@ target_include_directories(tests PUBLIC ../ext)
 target_include_directories(tests PUBLIC ../include)
 # allow user to run tests with `make test` or `ctest`
 include(../cmake/Catch.cmake)
+include_directories(../ext/db_migration)
 catch_discover_tests(tests)
