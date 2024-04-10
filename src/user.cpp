@@ -60,12 +60,14 @@ namespace car_park {
             sqlite3_bind_text(stmt, 1, user.get_login().c_str(), -1, SQLITE_STATIC);
             sqlite3_bind_text(stmt, 2, password.c_str(), -1, SQLITE_STATIC);
             sqlite3_bind_text(stmt, 3, user.get_type().c_str(), -1, SQLITE_STATIC);
-            sqlite3_step(stmt);
+            rc = sqlite3_step(stmt);
+            if (rc != SQLITE_DONE) {
+                sqlite3_finalize(stmt);
+                sqlite3_close(db);
+                return false;
+            }
             sqlite3_finalize(stmt);
-        } else {
-            return false;
         }
-
         sqlite3_close(db);
         return true;
     }

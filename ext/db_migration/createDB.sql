@@ -48,3 +48,13 @@ CREATE TABLE users (
 );
 
 CREATE INDEX users_role_index ON users (role);
+
+INSERT INTO users (login, password, role) VALUES ('vasily324', '1111', 'admin');
+INSERT INTO users (login, password, role) VALUES ('oleg324', '187536', 'driver');
+INSERT INTO cars (number, brand, initial_mileage, capacity) VALUES ('3089 AB-7', 'BMW', 305608.0, 1500.0);
+INSERT INTO cars (number, brand, initial_mileage, capacity) VALUES ('8924 HP-3', 'Audi', 3000.0, 600.0);
+INSERT INTO drivers (user_login, name, category, career_start, birth_year) VALUES ('vasily324', 'Oleg', 'C', 2001, 1971);
+INSERT INTO drivers (user_login, name, category, career_start, birth_year) VALUES ('oleg324', 'Ivan', 'C', 2002, 1958);
+INSERT INTO orders (datetime, driver_id, car_number, length, cargo_weight, cost) VALUES (20240303, 2, '8924 HP-3', 350.0, 400.0, 2500.0);
+INSERT INTO orders (datetime, driver_id, car_number, length, cargo_weight, cost) VALUES (20240306, 2, '8924 HP-3', 456762.0, 100.0, 100.0);
+INSERT INTO orders (datetime, driver_id, car_number, length, cargo_weight, cost) VALUES (20240408, 2, '8924 HP-3', 790.0, 120.0, 500.0);

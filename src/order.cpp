@@ -27,11 +27,9 @@ namespace car_park {
         return order->getCargoWeight() <= car->getCapacity();
     }
 
-    void OrdersDAO::count_order_per_period(car_park::User &user, car_park::Driver &driver,
+    void OrdersDAO::count_order_per_period(car_park::Driver &driver,
                                            std::vector<Order> &orders_of_driver, long long start_date,
                                            long long end_date) {
-        if (!User::check_access(user))
-            return;
         sqlite3 *db;
         int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
