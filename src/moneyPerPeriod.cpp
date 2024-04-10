@@ -18,7 +18,7 @@ namespace car_park {
     bool MoneyPerPeriodDAO::insert(car_park::MoneyPerPeriod *mpp) {
 
         sqlite3 *db;
-        int rc = sqlite3_open("../../autopark.db", &db);
+        int rc = sqlite3_open("../autopark.db", &db);
         if (rc != SQLITE_OK)
             return false;
         std::string sql = "INSERT INTO money_per_period (id, datetime_from, datetime_to, driver_id, total_money) VALUES (?, ?, ?, ?, ?)";
@@ -44,7 +44,7 @@ namespace car_park {
         if (User::check_access(user)) {
             double total_money = 0.0;
             sqlite3 *db;
-            int rc = sqlite3_open("../../autopark.db", &db);
+            int rc = sqlite3_open("../autopark.db", &db);
             if (rc != SQLITE_OK)
                 return nullptr;
             std::string sql = "SELECT IFNULL(SUM(cost), 0) AS total_money FROM orders WHERE driver_id = ? AND datetime >= ? AND datetime <= ?";

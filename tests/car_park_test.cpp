@@ -30,8 +30,8 @@ bool createDB(){
     if(sql == " ")
         throw std::invalid_argument("oh shit");
     sqlite3 *db;
-    std::filesystem::remove("../../autopark.db");
-    int rc = sqlite3_open("../../autopark.db", &db);
+    std::filesystem::remove("../autopark.db");
+    int rc = sqlite3_open("../autopark.db", &db);
     char *errMsg = 0;
     rc = sqlite3_exec(db, sql.c_str(), 0, 0, &errMsg);
     if (rc != SQLITE_OK){

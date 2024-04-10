@@ -31,7 +31,7 @@ namespace car_park {
                                            std::vector<Order> &orders_of_driver, long long start_date,
                                            long long end_date) {
         sqlite3 *db;
-        int rc = sqlite3_open("../../autopark.db", &db);
+        int rc = sqlite3_open("../autopark.db", &db);
         if (rc != SQLITE_OK)
             return;
         std::string sql = "SELECT id,datetime,driver_id,car_number,length,cargo_weight,cost FROM orders WHERE driver_id = ? AND datetime >= ? AND datetime <= ?";
@@ -65,7 +65,7 @@ namespace car_park {
             return;
 
         sqlite3 *db;
-        int rc = sqlite3_open("../../autopark.db", &db);
+        int rc = sqlite3_open("../autopark.db", &db);
         if (rc != SQLITE_OK)
             return;
         std::string sql = "SELECT id,datetime,driver_id,car_number,length,cargo_weight,cost FROM orders WHERE driver_id = ?";
@@ -97,7 +97,7 @@ namespace car_park {
 
         if (OrdersDAO::check_weight(&order, CarsDAO::find_by_number(user, order.getCarNumber()))) {
             sqlite3 *db;
-            int rc = sqlite3_open("../../autopark.db", &db);
+            int rc = sqlite3_open("../autopark.db", &db);
             if (rc != SQLITE_OK)
                 return false;
             std::string sql = "INSERT INTO orders (datetime, driver_id, car_number, length, cargo_weight, cost) VALUES (?, ?, ?, ?, ?, ?)";
@@ -127,7 +127,7 @@ namespace car_park {
         if (OrdersDAO::check_weight(&order, CarsDAO::find_by_number(user, order.getCarNumber()))) {
             sqlite3 *db;
 
-            int rc = sqlite3_open("../../autopark.db", &db);
+            int rc = sqlite3_open("../autopark.db", &db);
             if (rc != SQLITE_OK)
                 return false;
             std::string sql = "UPDATE orders SET datetime = ?, driver_id = ?, car_number = ?, length = ?, cargo_weight = ?, cost = ? WHERE id = ?";
