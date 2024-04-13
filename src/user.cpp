@@ -30,7 +30,7 @@ namespace car_park {
     User *UsersDAO::find(std::string login, std::string password) {
         std::cout << "current_path " << std::filesystem::current_path() << std::endl;
         sqlite3 *db;
-        int rc = sqlite3_open("../autopark.db", &db);
+        int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
             return nullptr;
         std::string sql = "SELECT login,password,role FROM users WHERE login = ? AND password = ? ";
@@ -55,7 +55,7 @@ namespace car_park {
     bool UsersDAO::insert(User &user, std::string password) {
         sqlite3 *db;
         std::cout << "current_path " << std::filesystem::current_path() << std::endl;
-        int rc = sqlite3_open("../autopark.db", &db);
+        int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
             return false;
         std::string sql = "INSERT INTO users (login, password, role) VALUES (?, ?, ?)";
@@ -78,7 +78,7 @@ namespace car_park {
 
     bool UsersDAO::update(User &user, std::string password) {
         sqlite3 *db;
-        int rc = sqlite3_open("../autopark.db", &db);
+        int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
             return false;
         std::string sql = "UPDATE users SET password = ?, role = ? WHERE login = ?";

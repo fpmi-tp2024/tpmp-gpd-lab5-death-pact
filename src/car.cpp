@@ -28,7 +28,7 @@ namespace car_park {
 
     void Car::count_totals() {
         sqlite3 *db;
-        int rc = sqlite3_open("../autopark.db", &db);
+        int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
             return;
         std::string sql = "SELECT SUM(length) AS total_mileage, SUM(cargo_weight) AS total_cargo_weight FROM orders WHERE car_number = ?;";
@@ -50,7 +50,7 @@ namespace car_park {
 
     bool CarsDAO::insert(Car& car){
         sqlite3 *db;
-        int rc = sqlite3_open("../autopark.db", &db);
+        int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
             return false;
         std::string sql = "INSERT INTO cars (number, brand, initial_mileage, capacity) VALUES (?, ?, ?, ?)";
@@ -75,7 +75,7 @@ namespace car_park {
     Car* CarsDAO::find_by_number(User& user, std::string car_number){
         if (Driver::check_ownership(user,car_number)) {
             sqlite3 *db;
-            int rc = sqlite3_open("../autopark.db", &db);
+            int rc = sqlite3_open("../../autopark.db", &db);
             if (rc != SQLITE_OK)
                 return nullptr;
             std::string sql = "SELECT number,brand,initial_mileage,capacity FROM cars WHERE number = ?";
@@ -103,7 +103,7 @@ namespace car_park {
 
     Car* CarsDAO::find_with_max_total_mileage(User& user){
             sqlite3 *db;
-            int rc = sqlite3_open("../autopark.db", &db);
+            int rc = sqlite3_open("../../autopark.db", &db);
             if (rc != SQLITE_OK)
                 return nullptr;
             std::string sql = "SELECT cars.number,cars.brand,cars.initial_mileage,cars.capacity, "

@@ -22,7 +22,7 @@ namespace car_park {
 
     void Driver::count_totals() {
         sqlite3 *db;
-        int rc = sqlite3_open("../autopark.db", &db);
+        int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
             return;
         std::string sql = "SELECT COUNT(*) AS total_orders, SUM(cost) AS total_money, SUM(cargo_weight) AS total_cargo_weight FROM orders WHERE driver_id = ?;";
@@ -50,7 +50,7 @@ namespace car_park {
             if (dr == nullptr)
                 return false;
             sqlite3 *db;
-            int rc = sqlite3_open("../autopark.db", &db);
+            int rc = sqlite3_open("../../autopark.db", &db);
             if (rc != SQLITE_OK)
                 return false;
             std::string sql = "SELECT COUNT(*) FROM orders WHERE driver_id = ? AND car_number = ?";
@@ -81,7 +81,7 @@ namespace car_park {
 
 
         sqlite3 *db;
-        int rc = sqlite3_open("../autopark.db", &db);
+        int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
             return nullptr;
         std::string sql = "SELECT id,user_login,name,category,career_start,birth_year FROM drivers WHERE user_login = ?";
@@ -112,7 +112,7 @@ namespace car_park {
             return nullptr;
 
         sqlite3 *db;
-        int rc = sqlite3_open("../autopark.db", &db);
+        int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
             return nullptr;
         std::string sql = "SELECT drivers.id,drivers.user_login,drivers.name,drivers.category,"
@@ -149,7 +149,7 @@ namespace car_park {
             return;
 
         sqlite3 *db;
-        int rc = sqlite3_open("../autopark.db", &db);
+        int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
             return;
         std::string sql = "SELECT id,user_login,name,category,career_start,birth_year FROM drivers";
@@ -174,7 +174,7 @@ namespace car_park {
     }
     bool DriversDAO::insert(Driver& driver){
         sqlite3 *db;
-        int rc = sqlite3_open("../autopark.db", &db);
+        int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
             return false;
         std::string sql = "INSERT INTO drivers (user_login, name, category, career_start, birth_year) VALUES (?, ?, ?, ?, ?)";
