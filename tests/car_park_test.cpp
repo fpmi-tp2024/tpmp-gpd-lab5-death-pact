@@ -232,7 +232,7 @@ TEST_CASE("Test MoneyPerPeriodDAO count_all","[MoneyPerPeriodDAO]"){
     User* client = UsersDAO::find("oleg324","187536");
     SECTION("Check count all with authorized user"){
         std::vector<MoneyPerPeriod*> mpps = MoneyPerPeriodDAO::count_all(*admin,20240303,20240308);
-        REQUIRE(mpps.size() == 2);
+        REQUIRE(mpps.size() == 3);
         REQUIRE(mpps[0]->getTotalMoney() == 0);
         REQUIRE(mpps[1]->getTotalMoney() == 2600);
         for (auto i : mpps)
@@ -244,3 +244,70 @@ TEST_CASE("Test MoneyPerPeriodDAO count_all","[MoneyPerPeriodDAO]"){
     }
 }
 
+TEST_CASE("Test Driver find_by_user","[DriversDAO]"){
+    createDB();
+    SECTION("Check driver search by user login") {
+        User *user_d = UsersDAO::find("oleg324", "187536");
+        Driver* driver = DriversDAO::find_by_user(*user_d);
+        REQUIRE(driver->getId() == 2);
+        delete driver;
+        delete user_d;
+    }
+    SECTION("Check non existing driver search"){
+        User user("user_not_driver,client");
+        Driver* driver = DriversDAO::find_by_user(user);
+        REQUIRE(driver == nullptr);
+        delete driver;
+    }
+}
+
+TEST_CASE("Test Driver find_with_min_orders","[DriversDAO]"){
+    createDB();
+    SECTION("Check authorized search"){
+        User* admin = UsersDAO::find("vasily324","1111");
+        Driver* driver = DriversDAO::find_with_min_orders(*admin);
+        REQUIRE(driver->getId() == 1);
+        delete admin;
+        delete driver;
+    }
+    SECTION("Check non authorized search"){
+        User* user = UsersDAO::find("oleg324","187536");
+        Driver* driver = DriversDAO::find_with_min_orders(*user);
+        REQUIRE(driver == nullptr);
+        delete user;
+    }
+}
+
+TEST_CASE("Test Driver find_all","[DriversDAO]"){
+    createDB();
+    std::vector<Driver> drivers;
+    SECTION("Check non authorized search"){
+        User* user = UsersDAO::find("oleg324","187536");
+        DriversDAO::find_all(*user,drivers);
+        REQUIRE(drivers.empty());
+        delete user;
+    }SECTION("Check authorized search"){
+        User* admin = UsersDAO::find("vasily324","1111");
+        DriversDAO::find_all(*admin, drivers);
+        REQUIRE(drivers.size() == 2);
+        REQUIRE(drivers[0].getName() == "Oleg");
+        REQUIRE(drivers[1].getName() == "Ivan");
+        delete admin;
+    }
+}
+
+TEST_CASE("Test Driver insert","[DriversDAO]"){
+    SECTION("Check new driver insertion")
+    {
+        createDB();
+        User user("new_driver,driver");
+        UsersDAO::insert(user,"1111");
+        Driver driver("2,new_driver,Alex,C,2015,1998");
+        REQUIRE(DriversDAO::insert(driver));
+    }
+    SECTION("Check driver insertion with non existant user_login"){
+        createDB();
+        Driver driver("2,new_d,Alex,C,2015,1998");
+        REQUIRE(!DriversDAO::insert(driver));
+    }
+}
