@@ -105,7 +105,7 @@ namespace car_park {
             if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
                 sqlite3_bind_int64(stmt, 1, order.getDatetime());
                 sqlite3_bind_int64(stmt, 2, order.getDriverId());
-                sqlite3_bind_text(stmt, 3, order.getCarNumber().c_str(), -1, SQLITE_STATIC);
+                sqlite3_bind_text(stmt, 3, order.getCarNumber().c_str(), -1, SQLITE_TRANSIENT);
                 sqlite3_bind_double(stmt, 4, order.getLength());
                 sqlite3_bind_double(stmt, 5, order.getCargoWeight());
                 sqlite3_bind_double(stmt, 6, order.getCost());
@@ -135,7 +135,7 @@ namespace car_park {
             if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
                 sqlite3_bind_int64(stmt, 1, order.getDatetime());
                 sqlite3_bind_int64(stmt, 2, order.getDriverId());
-                sqlite3_bind_text(stmt, 3, order.getCarNumber().c_str(), -1, SQLITE_STATIC);
+                sqlite3_bind_text(stmt, 3, order.getCarNumber().c_str(), -1, SQLITE_TRANSIENT);
                 sqlite3_bind_double(stmt, 4, order.getLength());
                 sqlite3_bind_double(stmt, 5, order.getCargoWeight());
                 sqlite3_bind_double(stmt, 6, order.getCost());

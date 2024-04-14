@@ -59,7 +59,7 @@ namespace car_park {
                     total_money = sqlite3_column_double(stmt, 0);
                 }
 
-               sqlite3_finalize(stmt);
+                sqlite3_finalize(stmt);
             } else {
                 return nullptr;
             }

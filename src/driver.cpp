@@ -58,7 +58,7 @@ namespace car_park {
 
             if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
                 sqlite3_bind_int64(stmt, 1, dr->getId());
-                sqlite3_bind_text(stmt, 2, car_number.c_str(), -1, SQLITE_STATIC);
+                sqlite3_bind_text(stmt, 2, car_number.c_str(), -1, SQLITE_TRANSIENT);
 
                 if (sqlite3_step(stmt) == SQLITE_ROW) {
                     int count = sqlite3_column_int(stmt, 0);
@@ -70,16 +70,14 @@ namespace car_park {
             sqlite3_close(db);
             delete dr;
             return false;
-            }
-        return false;
         }
+        return false;
+    }
 
 
 
 
     Driver* DriversDAO::find_by_user(User& user){
-
-
         sqlite3 *db;
         int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
@@ -88,7 +86,7 @@ namespace car_park {
         sqlite3_stmt* stmt;
 
         if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
-            sqlite3_bind_text(stmt, 1, user.get_login().c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_text(stmt, 1, user.get_login().c_str(), -1, SQLITE_TRANSIENT);
 
             if (sqlite3_step(stmt) == SQLITE_ROW) {
                 int id = sqlite3_column_int(stmt, 0);
@@ -173,23 +171,40 @@ namespace car_park {
         sqlite3_close(db);
     }
     bool DriversDAO::insert(Driver& driver){
+        User user(driver.getUserLogin() + ",driver");
+        if (UsersDAO::insert(user,"1111")) {
+            sqlite3 *db;
+            int rc = sqlite3_open("../../autopark.db", &db);
+            std::string sql = "DELETE FROM users WHERE login = ?";
+            sqlite3_stmt* stmt;
+            if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+                sqlite3_bind_text(stmt, 1, driver.getUserLogin().c_str(), -1, SQLITE_TRANSIENT);
+            }
+            sqlite3_step(stmt);
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return false;
+        }
         sqlite3 *db;
         int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)
             return false;
+
         std::string sql = "INSERT INTO drivers (user_login, name, category, career_start, birth_year) VALUES (?, ?, ?, ?, ?)";
         sqlite3_stmt* stmt;
         if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
-            sqlite3_bind_text(stmt, 1, driver.getUserLogin().c_str(), -1, SQLITE_STATIC);
-            sqlite3_bind_text(stmt, 2, driver.getName().c_str(), -1, SQLITE_STATIC);
-            sqlite3_bind_text(stmt, 3, driver.getCategory().c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_text(stmt, 1, driver.getUserLogin().c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 2, driver.getName().c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 3, driver.getCategory().c_str(), -1, SQLITE_TRANSIENT);
             sqlite3_bind_int64(stmt, 4, driver.getCareerStart());
             sqlite3_bind_int64(stmt, 5, driver.getBirthYear());
-            sqlite3_step(stmt);
+            rc = sqlite3_step(stmt);
+            if (rc != SQLITE_DONE){
+                sqlite3_finalize(stmt);
+                sqlite3_close(db);
+                return false;
+            }
             sqlite3_finalize(stmt);
-        } else {
-            sqlite3_close(db);
-            return false;
         }
         sqlite3_close(db);
         return true;

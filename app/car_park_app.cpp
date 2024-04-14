@@ -10,17 +10,20 @@ using namespace car_park;
 
 
 long long dateToTimestamp(const std::string& dateString) {
-    std::tm time = {};
-    std::istringstream ss(dateString);
-    ss >> std::get_time(&time, "%Y-%m-%d");
-
+    std::stringstream ss(dateString);
+    long long year;
+    long long month;
+    long long day;
+    ss >> year;
+    ss.ignore();
+    ss >> month;
+    ss.ignore();
+    ss >> day;
     if (ss.fail()) {
         std::cerr << "Parsing data mistake" << std::endl;
         return -1;
     }
-
-    std::time_t timestamp = std::mktime(&time);
-    return static_cast<long long>(timestamp);
+    return year * 10000L + month * 100L + day;
 }
 
 void showMainMenu() {
@@ -300,7 +303,7 @@ void newOrder() {
     std::cout << "Enter the weight of your carriage (.0 kg): ";
     std::getline(std::cin, weight);
 
-    auto order = new Order("123," + std::to_string(date) + ",2," + "8924 HP-3," + destination + "," + weight + ",100.0");
+    auto order = new Order("123," + std::to_string(date) + ",2," + "8924 HP-3," + destination + "," + weight + ",100.0");            // check the algorithm of adding new order?
     if (OrdersDAO::insert(*user, *order)) {
         std::cout << "Order was successfully added! \n" << std::endl;
     } else {
