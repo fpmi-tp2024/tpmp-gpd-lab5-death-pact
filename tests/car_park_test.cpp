@@ -304,9 +304,74 @@ TEST_CASE("Test Driver insert","[DriversDAO]"){
         Driver driver("2,new_driver,Alex,C,2015,1998");
         REQUIRE(DriversDAO::insert(driver));
     }
-    SECTION("Check driver insertion with non existant user_login"){
+    SECTION("Check driver insertion with non existing user_login"){
         createDB();
         Driver driver("2,new_d,Alex,C,2015,1998");
         REQUIRE(!DriversDAO::insert(driver));
     }
+}
+
+TEST_CASE("Test Order find_all_by_driver","[OrdersDAO]"){
+    createDB();
+    User* admin = UsersDAO::find("vasily324","1111");
+    User* client = UsersDAO::find("oleg324","187536");
+    Driver* driver_oleg = DriversDAO::find_by_user(*client);
+    Driver* driver_vasily = DriversDAO::find_by_user(*admin);
+    std::vector<Order> orders;
+    SECTION("Check driver's order info"){
+        OrdersDAO::find_all_by_driver(*admin, *driver_oleg, orders);
+        REQUIRE(orders[0].getId() == 1);
+        REQUIRE(orders[1].getId() == 2);
+        REQUIRE(orders[2].getId() == 3);
+        orders.clear();
+    }
+    SECTION("Check order info with no permission"){
+        OrdersDAO::find_all_by_driver(*client, *driver_oleg, orders);
+        REQUIRE(orders.empty());
+    }
+    SECTION("Check info on driver with no orders"){
+        OrdersDAO::find_all_by_driver(*admin, *driver_vasily, orders);
+        REQUIRE(orders.empty());
+    }
+    SECTION("Check info on non existing driver"){
+        Driver driver("123,new_driver,Ivan,C,2014,2000");
+        OrdersDAO::find_all_by_driver(*admin, driver, orders);
+        REQUIRE(orders.empty());
+    }
+    delete admin;
+    delete client;
+    delete driver_oleg;
+    delete driver_vasily;
+}
+
+TEST_CASE("Test Order count_order_per_period","[OrdersDAO]"){
+    createDB();
+    User* admin = UsersDAO::find("vasily324","1111");
+    User* client = UsersDAO::find("oleg324","187536");
+    Driver* driver_oleg = DriversDAO::find_by_user(*client);
+    Driver* driver_vasily = DriversDAO::find_by_user(*admin);
+    std::vector<Order> orders;
+    SECTION("Check driver's order info"){
+        OrdersDAO::count_order_per_period(*driver_oleg, orders, 20240303, 20240306);
+        REQUIRE(orders[0].getId() == 1);
+        REQUIRE(orders[1].getId() == 2);
+        orders.clear();
+    }
+    SECTION("Check order info on empty period"){
+        OrdersDAO::count_order_per_period(*driver_oleg, orders, 20240307, 20240310);
+        REQUIRE(orders.empty());
+    }
+    SECTION("Check info on driver with no orders"){
+        OrdersDAO::count_order_per_period(*driver_vasily, orders, 20240303, 20240306);
+        REQUIRE(orders.empty());
+    }
+    SECTION("Check info on non existing driver"){
+        Driver driver("123,new_driver,Ivan,C,2014,2000");
+        OrdersDAO::count_order_per_period(driver, orders, 20240303, 20240306);
+        REQUIRE(orders.empty());
+    }
+    delete admin;
+    delete client;
+    delete driver_oleg;
+    delete driver_vasily;
 }
