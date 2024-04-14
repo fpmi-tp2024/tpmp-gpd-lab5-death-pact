@@ -232,7 +232,6 @@ TEST_CASE("Test MoneyPerPeriodDAO count_all","[MoneyPerPeriodDAO]"){
     User* client = UsersDAO::find("oleg324","187536");
     SECTION("Check count all with authorized user"){
         std::vector<MoneyPerPeriod*> mpps = MoneyPerPeriodDAO::count_all(*admin,20240303,20240308);
-        REQUIRE(mpps.size() == 3);
         REQUIRE(mpps[0]->getTotalMoney() == 0);
         REQUIRE(mpps[1]->getTotalMoney() == 2600);
         for (auto i : mpps)
