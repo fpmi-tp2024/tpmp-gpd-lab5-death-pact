@@ -78,8 +78,6 @@ namespace car_park {
 
 
     Driver* DriversDAO::find_by_user(User& user){
-
-
         sqlite3 *db;
         int rc = sqlite3_open("../../autopark.db", &db);
         if (rc != SQLITE_OK)

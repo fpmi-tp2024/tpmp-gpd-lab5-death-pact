@@ -10,17 +10,20 @@ using namespace car_park;
 
 
 long long dateToTimestamp(const std::string& dateString) {
-    std::tm time = {};
-    std::istringstream ss(dateString);
-    ss >> std::get_time(&time, "%Y-%m-%d");
-
+    std::stringstream ss(dateString);
+    long long year;
+    long long month;
+    long long day;
+    ss >> year;
+    ss.ignore();
+    ss >> month;
+    ss.ignore();
+    ss >> day;
     if (ss.fail()) {
         std::cerr << "Parsing data mistake" << std::endl;
         return -1;
     }
-
-    std::time_t timestamp = std::mktime(&time);
-    return static_cast<long long>(timestamp);
+    return year * 10000L + month * 100L + day;
 }
 
 void showMainMenu() {
