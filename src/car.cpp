@@ -134,4 +134,32 @@ namespace car_park {
         sqlite3_close(db);
         return nullptr;
     }
+
+    void CarsDAO::find_all(User& user, std::vector<Car>& cars){
+        if (!User::check_access(user))
+            return;
+
+        sqlite3 *db;
+        int rc = sqlite3_open("../../autopark.db", &db);
+        if (rc != SQLITE_OK)
+            return;
+        std::string sql = "SELECT number,brand,initial_mileage,capacity FROM cars ORDER BY capacity ASC";
+
+        sqlite3_stmt* stmt;
+
+        if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+            while (sqlite3_step(stmt) == SQLITE_ROW) {
+                std::string number = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 0));
+                std::string brand = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 1));
+                double initial_mileage = sqlite3_column_double(stmt, 2);
+                double capacity = sqlite3_column_double(stmt, 3);
+                cars.emplace_back(Car(number + "," + brand + "," + std::to_string(initial_mileage) + "," +
+                                      std::to_string(capacity)));
+            }
+
+            sqlite3_finalize(stmt);
+        }
+        sqlite3_close(db);
+    }
 }
+
