@@ -1,5 +1,7 @@
 #include "car_park/car_park.hpp"
-
+#include <fstream>
+#include <filesystem>
+#include "sql/sqlite3.h"
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -8,6 +10,29 @@
 
 using namespace car_park;
 
+bool createDB(){
+    std::ifstream file("../static/db_migration/createDB.sql");
+    std::string line;
+    std::string sql = " ";
+    while (std::getline(file, line)){
+        sql += line;
+    }
+    file.close();
+    sqlite3 *db;
+    if(std::filesystem::exists("../../autopark.db"))
+        return true;
+    int rc = sqlite3_open("../../autopark.db", &db);
+    char *errMsg = 0;
+    rc = sqlite3_exec(db, sql.c_str(), 0, 0, &errMsg);
+    if (rc != SQLITE_OK){
+        sqlite3_free(errMsg);
+        sqlite3_close(db);
+        return false;
+    }
+    sqlite3_free(errMsg);
+    sqlite3_close(db);
+    return true;
+}
 
 long long dateToTimestamp(const std::string& dateString) {
     std::stringstream ss(dateString);
@@ -49,6 +74,10 @@ void showDriverMenu() {
 void driverMenu(User* user) {
     int choice;
     Driver* driver = DriversDAO::find_by_user(*user);
+    if (!driver) {
+        std::cerr << "Driver not found. Please check the user credentials." << std::endl;
+        return;
+    }
     Car* car;
     std::vector<Order> orders;
     std::cin.ignore();
@@ -57,7 +86,15 @@ void driverMenu(User* user) {
         std::cout << "Choose an option (1-5): ";
         std::string choiceStr;
         std::getline(std::cin, choiceStr);
-        choice = std::stoi(choiceStr);
+        try {
+            choice = std::stoi(choiceStr);
+        } catch (const std::invalid_argument& e) {
+            std::cerr << "Invalid input. Please enter a number." << std::endl;
+            continue;
+        } catch (const std::out_of_range& e) {
+            std::cerr << "Input out of range. Please enter a smaller number." << std::endl;
+            continue;
+        }
         std::string carNumber, inputDate1, inputDate2;
         long long timestamp1, timestamp2;
         switch (choice) {
@@ -84,7 +121,7 @@ void driverMenu(User* user) {
                 std::getline(std::cin, carNumber);
                 car = CarsDAO::find_by_number(*user, carNumber);
                 if (car == nullptr) {
-                    std::cout << "It's not your car number! \n Back to menu.";
+                    std::cerr << "Car not found or access not permitted for this car number." << std::endl;
                     break;
                 }
                 std::cout << "Total mileage: " << car->getTotalMileage() << std::endl;
@@ -163,6 +200,11 @@ void fleetManagementMenu(User* user) {
                 std::getline(std::cin, userName);
                 user1 = new User(userName + ",driver");
                 driver = DriversDAO::find_by_user(*user1);
+                if (!driver) {
+                    std::cerr << "Driver not found for username: " << userName << std::endl;
+                    delete user1;  // Ensure to delete user1 to avoid memory leaks
+                    continue;
+                }
                 std::cout << "Enter first date yyyy-mm-dd: ";
                 std::getline(std::cin, inputDate1);
                 std::cout << "Enter second date yyyy-mm-dd: ";
@@ -184,6 +226,10 @@ void fleetManagementMenu(User* user) {
                 std::cout << "Enter car number: ";
                 std::getline(std::cin, carNumber);
                 car = CarsDAO::find_by_number(*user, carNumber);
+                if (!car) {
+                    std::cerr << "No car found with number: " << carNumber << std::endl;
+                    continue;
+                }
                 std::cout << "Total mileage: " << car->getTotalMileage() << std::endl;
                 std::cout << "Total cargo weight: " << car->getTotalWeight() << std::endl;
                 std::cout << std::endl;
@@ -248,6 +294,11 @@ void login() {
     std::cout << "Enter your password: ";
     std::cin >> password;
 
+    if (username.empty() || password.empty()) {
+        std::cerr << "Username or password cannot be empty." << std::endl;
+        return;
+    }
+
     User* user = UsersDAO::find(username, password);
 
     if (user != nullptr) {
@@ -287,55 +338,81 @@ long long getCurrentDateAsLongLong() {
 
 void newOrder() {
     std::string destination, weight, userName, carNumber;
-    std::cin.ignore();
+    std::vector<Car> cars;
     User* user = new User(userName + ",admin");
-    std::cout << "Enter car number: ";
+    std::cout << "Enter the weight of your carriage (.0 kg): ";
+    std::getline(std::cin, weight);
+    CarsDAO::find_all(*user, cars);
+    int i = 1, count = 0;
+    for(auto car: cars){
+        if (car.getTotalWeight() >= std::stod(weight)) {
+            std::cout << i << " " << car.getNumber() << std::endl;
+            count++;
+            i++;
+        }
+    }
+    if (count == 0) {
+        std::cout << "Your order is too heavy, back to the main menu..\n" << std::endl;
+        return;
+    }
+    std::cout << "\nEnter the number of the preferred car: ";
     std::getline(std::cin, carNumber);
-    Car *car = CarsDAO::find_by_number(*user, carNumber);
+    int carIndex = -1;
+    try {
+        carIndex = std::stoi(carNumber) - 1;
+        if (carIndex < 0 || carIndex >= cars.size()) {
+            std::cerr << "Invalid car number selection." << std::endl;
+            return;
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Invalid input, please enter a valid number." << std::endl;
+        return;
+    }
+
+    Car *car = CarsDAO::find_by_number(*user, cars[carIndex].getNumber());
     if (car == nullptr) {
         std::cout << "There's no such car number in database! \n Back to the main menu... \n" << std::endl;
         return;
     }
+    Driver *driver = DriversDAO::find_with_min_orders(*user);
     long long date = getCurrentDateAsLongLong();
-    std::cout << date;
     std::cout << "Enter the destination (.0 km): ";
     std::getline(std::cin, destination);
-    std::cout << "Enter the weight of your carriage (.0 kg): ";
-    std::getline(std::cin, weight);
 
-    auto order = new Order("123," + std::to_string(date) + ",2," + "8924 HP-3," + destination + "," + weight + ",100.0");            // check the algorithm of adding new order?
+    auto order = new Order("123," + std::to_string(date) + "," + std::to_string(driver->getId()) + "," + cars[carIndex].getNumber() + "," + destination + "," + weight + ",100.0");            // check the algorithm of adding new order?
     if (OrdersDAO::insert(*user, *order)) {
         std::cout << "Order was successfully added! \n" << std::endl;
-    } else {
-        std::cout << "Something went wrong.. \n" << std::endl;
-        return;
     }
 }
 
 int main() {
-    int choice;
+    createDB();
+    std::string choice;
 
     do {
         showMainMenu();
         std::cout << "Choose an option (1-3): ";
-        std::cin >> choice;
-
-        switch (choice) {
-            case 1:
-                login();
-                break;
-            case 2:
-                newOrder();
-                break;
-            case 3:
-                std::cout << "Goodbye!" << std::endl;
-                break;
-            default:
-                std::cout << "Invalid choice. Please try again." << std::endl;
-                break;
+        getline(std::cin, choice);
+        try {
+            int selection = std::stoi(choice);
+            switch (selection) {
+                case 1:
+                    login();
+                    break;
+                case 2:
+                    newOrder();
+                    break;
+                case 3:
+                    std::cout << "Goodbye!" << std::endl;
+                    break;
+                default:
+                    std::cout << "Invalid choice. Please try again." << std::endl;
+                    break;
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "Invalid input. Please enter a number." << std::endl;
         }
-    } while (choice != 3);
+    } while (choice != "3");
 
     return 0;
 }
-
