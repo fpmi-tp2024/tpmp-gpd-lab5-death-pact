@@ -287,12 +287,13 @@ void fleetManagementMenu(User* user) {
 
 void login() {
     std::string username, password;
-
     std::cout << "Enter your username: ";
-    std::cin >> username;
+    std::cin.ignore();
+    std::getline(std::cin, username);
 
     std::cout << "Enter your password: ";
-    std::cin >> password;
+    std::cin.ignore();
+    std::getline(std::cin, password);
 
     if (username.empty() || password.empty()) {
         std::cerr << "Username or password cannot be empty." << std::endl;
